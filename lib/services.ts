@@ -141,8 +141,8 @@ export async function getServices(): Promise<ServiceItem[]> {
 
   if (sheetUrl) {
     try {
-      // Revalidate every 60 seconds (ISR)
-      const response = await fetch(sheetUrl, { next: { revalidate: 60 } });
+      // Fetch fresh data without stale cache so Google Sheets changes appear immediately
+      const response = await fetch(sheetUrl, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`Sheet responded with HTTP ${response.status}`);
       }

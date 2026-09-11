@@ -12,6 +12,13 @@ import { WorkGallery } from "@/components/WorkGallery";
 import { faqs, reviews } from "@/lib/data";
 import { getServices } from "@/lib/services";
 
+/**
+ * Dynamic server rendering ensures changes made in Google Sheets
+ * reflect immediately on live Vercel deployments as soon as Google publishes the edit.
+ */
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const services = await getServices();
 
