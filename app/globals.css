@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, "Segoe UI", system-ui, sans-serif;
+
+  --color-obsidian: #09090b;
+  --color-accent: #10b981;
+  --color-ice: #38bdf8;
+
+  --animate-marquee: marquee 50s linear infinite;
+  --animate-shimmer: shimmer 4.5s ease-in-out infinite;
+  --animate-sheet-in: sheet-in 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-sheet-out: sheet-out 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  --animate-fade-in: fade-in 300ms ease-out;
+  --animate-fade-out: fade-out 280ms ease-in forwards;
+  --animate-ambient-slow: ambient-drift 24s ease-in-out infinite alternate;
+  --animate-ambient-reverse: ambient-drift-reverse 30s ease-in-out infinite alternate;
+  --animate-ambient-pulse: ambient-pulse 16s ease-in-out infinite alternate;
+
+  @keyframes ambient-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(40px, 60px, 0) scale(1.12);
+    }
+    100% {
+      transform: translate3d(-30px, 25px, 0) scale(0.95);
+    }
+  }
+
+  @keyframes ambient-drift-reverse {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-50px, -40px, 0) scale(1.15);
+    }
+    100% {
+      transform: translate3d(35px, 50px, 0) scale(1.02);
+    }
+  }
+
+  @keyframes ambient-pulse {
+    0%, 100% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.18);
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(0);
+    }
+    60%,
+    100% {
+      transform: translateX(300%);
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes sheet-out {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-obsidian);
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-obsidian);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
