@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "title": "Apex Mobile Detailing · Mobile Car Detailing in Charlotte, NC",
+    "description": "Mobile car detailing in Charlotte, NC. Ceramic coatings, paint correction, interior resets and hand wash & wax — fully self-contained with water and power onboard.",
+    "shareTitle": "Apex Mobile Detailing — Showroom shine in your driveway",
+    "shareImage": "/og-image.jpg",
+    "appTitle": "Apex Detail"
+  },
+  "business": {
+    "name": "Apex Mobile Detailing",
+    "monogram": "A",
+    "logo": "",
+    "city": "Charlotte",
+    "region": "NC",
+    "phoneDisplay": "(704) 555-0142",
+    "phoneE164": "+17045550142",
+    "hoursLabel": "Mon–Sat · 7am–7pm",
+    "hoursShort": "7a–7p",
+    "openHour": 7,
+    "closeHour": 19,
+    "openDays": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "timeZone": "America/New_York",
+    "serviceRadiusMiles": 25,
+    "googleRating": 5,
+    "googleReviewCount": 127,
+    "geo": {
+      "latitude": 35.2271,
+      "longitude": -80.8431
+    }
+  },
+  "header": {
+    "openLabel": "Open",
+    "closedLabel": "Closed"
+  },
+  "footer": {
+    "insuredLine": "Fully insured · Serving Charlotte & 25 mi around"
+  },
+  "stickyBar": {
+    "availability": "Available Today",
+    "callLabel": "Call now",
+    "estimateLabel": "Instant Estimate"
+  },
+  "services": [
+    {
+      "id": "interior-reset",
+      "name": "Full Interior Reset",
+      "tagline": "Steam, extract & sanitize every surface.",
+      "durationMinutes": 150,
+      "priceFrom": 209,
+      "features": [
+        "Hot-water seat & carpet extraction",
+        "Steam-sanitized vents, cupholders & console",
+        "Leather cleanse + UV conditioner",
+        "Streak-free glass inside & out"
+      ],
+      "popular": false,
+      "accent": "ice",
+      "imageUrl": "https://drive.google.com/open?id=1HNH-ozUhC532sVYSM2CuIb-DrPrnWuAV"
+    },
+    {
+      "id": "wash-wax",
+      "name": "Signature Wash & Wax",
+      "tagline": "The hand-wash your paint deserves, every month.",
+      "durationMinutes": 90,
+      "priceFrom": 139,
+      "features": [
+        "pH-neutral foam cannon + two-bucket wash",
+        "Iron & tar decontamination",
+        "Hand-applied sealant, 3-month protection",
+        "Wheels, tires & wells deep-cleaned",
+        "Quick interior vacuum & wipe-down"
+      ],
+      "popular": true,
+      "accent": "emerald",
+      "imageUrl": "/gallery/02-hand-wash.jpg"
+    },
+    {
+      "id": "correction-ceramic",
+      "name": "Stage 1 Correction & Ceramic",
+      "tagline": "Erase swirls. Lock in three years of gloss.",
+      "durationMinutes": 360,
+      "priceFrom": 749,
+      "features": [
+        "Clay bar + full chemical decon",
+        "Machine polish, 60–70% swirl removal",
+        "3-year SiO₂ ceramic coating",
+        "Wheel faces & glass coated",
+        "Paint-depth readings before & after"
+      ],
+      "popular": false,
+      "accent": "ice",
+      "imageUrl": "/gallery/04-ceramic-application.jpg"
+    }
+  ],
+  "serviceCard": {
+    "popularBadge": "Most booked",
+    "fromLabel": "from",
+    "selectLabel": "Select"
+  },
+  "booking": {
+    "title": "Book appointment",
+    "subtitle": "Instant confirmation with Resend. No deposit required.",
+    "successTitle": "Booking Confirmed",
+    "successSubtitle": "We have received your details.",
+    "successHeading": "Request Received!",
+    "doneLabel": "Done",
+    "stepService": "1. Choose Service",
+    "stepVehicle": "2. Vehicle Size",
+    "stepDay": "3. Preferred Day",
+    "stepContact": "4. Your Contact Info",
+    "successSentTo": "A confirmation has been sent to",
+    "successCallback": "Our detailer will text or call you shortly to confirm the exact arrival slot:",
+    "summaryCustomer": "Customer:",
+    "summaryPackage": "Selected Package:",
+    "summaryVehicle": "Vehicle:",
+    "summaryDay": "Requested Day:",
+    "summaryTotal": "Estimated Total:",
+    "estimateLabel": "Estimated Total",
+    "aboutLabel": "About",
+    "estimateNote": "on-site. Pay after walkaround inspection.",
+    "placeholders": {
+      "vehicle": "Vehicle year & model (e.g. 2022 Ford F-150)",
+      "name": "Full Name *",
+      "email": "Email (for confirmation) *",
+      "phone": "Phone number (for SMS) *",
+      "zip": "ZIP code (e.g. 28202)",
+      "notes": "Special requests, driveway notes (optional)"
+    },
+    "submitLabel": "Confirm Appointment Request",
+    "sendingLabel": "Sending Confirmation...",
+    "altContactLabel": "or instant direct contact",
+    "textRequestLabel": "Text request",
+    "vehicleSizes": [
+      {
+        "id": "coupe",
+        "label": "Sedan",
+        "hint": "Car · coupe",
+        "priceMultiplier": 1,
+        "timeMultiplier": 1
+      },
+      {
+        "id": "suv",
+        "label": "SUV / Truck",
+        "hint": "2-row · pickup",
+        "priceMultiplier": 1.2,
+        "timeMultiplier": 1.15
+      },
+      {
+        "id": "xl",
+        "label": "3-Row",
+        "hint": "Minivan · XL",
+        "priceMultiplier": 1.4,
+        "timeMultiplier": 1.3
+      }
+    ],
+    "dayOptions": [
+      {
+        "id": "today",
+        "label": "Today"
+      },
+      {
+        "id": "tomorrow",
+        "label": "Tomorrow"
+      },
+      {
+        "id": "week",
+        "label": "This week"
+      }
+    ]
+  },
+  "reviewModal": {
+    "verifiedBadge": "Verified Google Customer",
+    "verifiedBooking": "Verified on-site booking",
+    "vehicleLabel": "Vehicle",
+    "packageLabel": "Package Done",
+    "photosLabel": "Service Documentation (2 photos)",
+    "beforeLabel": "Before",
+    "afterLabel": "After",
+    "fullscreenHint": "Tap photo for fullscreen",
+    "bookLabel": "Book"
+  }
+}

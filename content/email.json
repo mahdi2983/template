@@ -1,0 +1,12 @@
+{
+  "notifyEmail": "",
+  "senderName": "Apex Mobile Detailing",
+  "replyTo": "",
+  "ownerSubject": "🚨 New Booking: {name} ({service})",
+  "sendCustomerConfirmation": true,
+  "customerSubject": "Your Detailing Appointment Request Received! — {business}",
+  "customerHeading": "Thanks, {name}!",
+  "customerIntro": "We have received your booking request for {service}. Our mobile studio brings 100% onboard deionized water and power — nothing to hook up at your location.",
+  "customerOutro": "Our master detailer will call or text you shortly at {phone} to confirm your arrival window.",
+  "customerFooter": "{business} · Charlotte, NC · Self-Contained Mobile Studio"
+}

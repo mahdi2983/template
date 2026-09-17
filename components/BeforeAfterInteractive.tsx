@@ -2,16 +2,17 @@
 
 import { ChevronLeft, ChevronRight, MoveHorizontal } from "lucide-react";
 import { useCallback, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { ImageEditButton, ItemControls } from "@/components/editable/EditControls";
+import { T } from "@/components/editable/T";
 import { PaintPanel } from "@/components/PaintPanel";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { cn } from "@/lib/cn";
+import { useField, useImageSrc } from "@/lib/editor/content-context";
 import { focusRing, surface } from "@/lib/styles";
-import type { PaintTone } from "@/types";
+import type { BeforeAfterBlock } from "@/types/content";
 
 interface BeforeAfterInteractiveProps {
-  tone?: PaintTone;
-  beforeSrc?: string;
-  afterSrc?: string;
+  base: string;
   initialPosition?: number;
 }
 
@@ -25,18 +26,11 @@ interface Gesture {
 const DRAG_THRESHOLD_PX = 4;
 const clamp = (value: number) => Math.min(100, Math.max(0, value));
 
-const resultStats = [
-  { value: "70%", label: "Swirls removed" },
-  { value: "3 yr", label: "Ceramic protection" },
-  { value: "6 hrs", label: "In your driveway" },
-];
-
-export function BeforeAfterInteractive({
-  tone = "obsidian",
-  beforeSrc,
-  afterSrc,
-  initialPosition = 50,
-}: BeforeAfterInteractiveProps) {
+export function BeforeAfterInteractive({ base, initialPosition = 50 }: BeforeAfterInteractiveProps) {
+  const block = useField<BeforeAfterBlock>(base);
+  const beforeSrc = useImageSrc(`${base}.beforeSrc`) || undefined;
+  const afterSrc = useImageSrc(`${base}.afterSrc`) || undefined;
+  const tone = block.tone ?? "obsidian";
   const [position, setPosition] = useState(() => clamp(initialPosition));
   const [isDragging, setIsDragging] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -117,15 +111,15 @@ export function BeforeAfterInteractive({
   const rounded = Math.round(position);
 
   return (
-    <section id="results" aria-labelledby="results-title" className="mt-10">
+    <section id={block.id} aria-labelledby={`${block.id}-title`} className="mt-10">
       <SectionHeading
-        id="results-title"
-        eyebrow="Real results"
-        title="Swipe the ceramic difference"
+        id={`${block.id}-title`}
+        eyebrow={<T p={`${base}.eyebrow`} />}
+        title={<T p={`${base}.title`} />}
         trailing={
           <span className="inline-flex items-center gap-1 text-xs font-medium text-zinc-500">
             <MoveHorizontal aria-hidden className="size-3.5" />
-            Drag
+            <T p={`${base}.hint`} />
           </span>
         }
       />
@@ -148,7 +142,7 @@ export function BeforeAfterInteractive({
             src={afterSrc}
             priority
             sizes="(max-width: 640px) 100vw, 720px"
-            alt="After: deep ceramic gloss with crisp reflections"
+            alt={block.afterAlt}
             className="absolute inset-0"
           />
 
@@ -159,7 +153,7 @@ export function BeforeAfterInteractive({
               src={beforeSrc}
               priority
               sizes="(max-width: 640px) 100vw, 720px"
-              alt="Before: dull paint with swirl marks and water spots"
+              alt={block.beforeAlt}
               className="absolute inset-0"
             />
           </div>
@@ -168,14 +162,14 @@ export function BeforeAfterInteractive({
             className="pointer-events-none absolute top-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-zinc-200 uppercase backdrop-blur-md transition-opacity duration-300"
             style={{ opacity: position > 22 ? 1 : 0 }}
           >
-            Before · Swirled
+            {block.beforeLabel}
           </span>
           <span
             className="pointer-events-none absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold tracking-wider text-zinc-100 uppercase backdrop-blur-md transition-opacity duration-300"
             style={{ opacity: position < 78 ? 1 : 0 }}
           >
             <span aria-hidden className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]" />
-            After · Ceramic
+            {block.afterLabel}
           </span>
 
           <div
@@ -206,13 +200,21 @@ export function BeforeAfterInteractive({
               <ChevronRight className="-ml-1 size-4" />
             </span>
           </div>
+
+          <ImageEditButton p={`${base}.beforeSrc`} label="Before photo" className="bottom-3 left-3" />
+          <ImageEditButton p={`${base}.afterSrc`} label="After photo" className="right-3 bottom-3" />
         </div>
 
         <dl className="grid grid-cols-3 gap-2 p-1 pt-3">
-          {resultStats.map((stat) => (
-            <div key={stat.label} className="rounded-2xl bg-zinc-950/50 px-3 py-2.5">
-              <dt className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">{stat.label}</dt>
-              <dd className="mt-0.5 text-base font-semibold tracking-tight text-zinc-100">{stat.value}</dd>
+          {block.stats.map((_, index) => (
+            <div key={index} className="relative rounded-2xl bg-zinc-950/50 px-3 py-2.5">
+              <dt className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
+                <T p={`${base}.stats.${index}.label`} />
+              </dt>
+              <dd className="mt-0.5 text-base font-semibold tracking-tight text-zinc-100">
+                <T p={`${base}.stats.${index}.value`} />
+              </dd>
+              <ItemControls list={`${base}.stats`} index={index} length={block.stats.length} className="right-1" />
             </div>
           ))}
         </dl>

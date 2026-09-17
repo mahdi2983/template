@@ -1,0 +1,237 @@
+{
+  "slug": "home",
+  "title": "Accueil",
+  "seoTitle": "",
+  "seoDescription": "",
+  "blocks": [
+    {
+      "id": "hero",
+      "type": "hero",
+      "badge": "Mobile detailing studio",
+      "titleLine1": "Showroom shine",
+      "titleLine2": "in your driveway.",
+      "text": "We bring our own water and power — nothing to hook up, nowhere to be. Hand over the keys, get back to your day, and come back to a car that looks better than the day you bought it.",
+      "chips": [
+        "Water onboard",
+        "Power onboard",
+        "Fully insured"
+      ],
+      "ctaLabel": "See packages & pricing",
+      "ctaHref": "#services",
+      "poster": "/hero-poster.jpg",
+      "showVideo": true,
+      "statValue": "100%",
+      "statLabel": "Self-contained. No hose, no outlet needed.",
+      "reviewsLabel": "Google reviews"
+    },
+    {
+      "id": "results",
+      "type": "beforeAfter",
+      "eyebrow": "Real results",
+      "title": "Swipe the ceramic difference",
+      "hint": "Drag",
+      "tone": "obsidian",
+      "beforeSrc": "/before.jpg",
+      "afterSrc": "/after.jpg",
+      "beforeLabel": "Before · Swirled",
+      "afterLabel": "After · Ceramic",
+      "beforeAlt": "Before: dull paint with swirl marks and water spots",
+      "afterAlt": "After: deep ceramic gloss with crisp reflections",
+      "stats": [
+        {
+          "value": "70%",
+          "label": "Swirls removed"
+        },
+        {
+          "value": "3 yr",
+          "label": "Ceramic protection"
+        },
+        {
+          "value": "6 hrs",
+          "label": "In your driveway"
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "type": "services",
+      "eyebrow": "Packages",
+      "title": "Pick your reset",
+      "hint": "Sedan pricing",
+      "note": "SUVs, trucks & 3-row vehicles adjust automatically in the instant estimate. No hidden fees.",
+      "emptyText": "Pricing is being refreshed — call for a same-day quote."
+    },
+    {
+      "id": "craft",
+      "type": "gallery",
+      "eyebrow": "Craft & Process",
+      "title": "Precision mobile craft in action",
+      "hint": "Tap to expand",
+      "introTitle": "Obsessive attention to every square inch",
+      "introText": "Our self-contained mobile studio brings shop-grade standards directly to your driveway.",
+      "stepLabel": "Step",
+      "items": [
+        {
+          "step": "01",
+          "title": "Snow Foam Pre-Soak",
+          "category": "Decontamination",
+          "desc": "pH-neutral active foam encapsulates grit and road salt before any mitt touches your clear coat.",
+          "src": "/gallery/01-snow-foam.jpg",
+          "alt": "Detailer applying thick snow foam cannon pre-wash on car in driveway"
+        },
+        {
+          "step": "02",
+          "title": "Two-Bucket Hand Wash",
+          "category": "Scratch-Free Contact",
+          "desc": "Grit-guarded rinse buckets and ultra-plush microfiber mitts preserve delicate clear coats.",
+          "src": "/gallery/02-hand-wash.jpg",
+          "alt": "Professional detailer hand-washing black Porsche Taycan with Meguiar's buckets"
+        },
+        {
+          "step": "03",
+          "title": "Spot-Free Deionized Rinse",
+          "category": "0 PPM Pure Water",
+          "desc": "Mobile deionized filtration leaves zero minerals, preventing water spot etching in sunlight.",
+          "src": "/gallery/03-spot-free-rinse.jpg",
+          "alt": "High pressure spot-free water rinse on dark performance car rear diffuser"
+        },
+        {
+          "step": "04",
+          "title": "Ceramic Quartz Application",
+          "category": "3-Year Protection",
+          "desc": "Hand-applied 9H ceramic coating cross-links with the paint for hydrophobic beading.",
+          "src": "/gallery/04-ceramic-application.jpg",
+          "alt": "Detailer in black nitrile gloves applying ceramic coating with applicator block"
+        },
+        {
+          "step": "05",
+          "title": "Microfiber Paint Leveling",
+          "category": "Optical Clarity",
+          "desc": "Careful microfiber leveling removes coating high spots to reveal a deep mirror gloss reflection.",
+          "src": "/gallery/05-paint-leveling.jpg",
+          "alt": "Detailer gently leveling ceramic coating on metallic hood with microfiber towel"
+        },
+        {
+          "step": "06",
+          "title": "Cabin Steam & Leather Care",
+          "category": "Interior Reset",
+          "desc": "High-temperature steam, extraction, and pH-balanced conditioner leave leather supple and clean.",
+          "src": "/gallery/06-interior-detail.jpg",
+          "alt": "Detailer cleaning car interior console and leather seats with microfiber towel"
+        }
+      ]
+    },
+    {
+      "id": "reviews",
+      "type": "reviews",
+      "eyebrow": "Google reviews",
+      "title": "Charlotte drivers, verified",
+      "hint": "Tap any review",
+      "countLabel": "reviews on Google",
+      "verifiedText": "Every review from a verified customer",
+      "cardPrompt": "Click for full review",
+      "items": [
+        {
+          "id": "r-marcus",
+          "author": "Marcus T.",
+          "city": "Ballantyne",
+          "vehicle": "2021 Tesla Model Y",
+          "rating": 5,
+          "quote": "Swirls I'd lived with for three years are just gone. Paint looks wet — and they never touched my hose.",
+          "serviceId": "correction-ceramic",
+          "tone": "pearl",
+          "beforeSrc": "/reviews/marcus-before.jpg",
+          "afterSrc": "/reviews/marcus-after.jpg"
+        },
+        {
+          "id": "r-priya",
+          "author": "Priya S.",
+          "city": "South End",
+          "vehicle": "2019 Audi Q5",
+          "rating": 5,
+          "quote": "Two kids and a golden retriever. Interior smells brand new. Booked it from my office parking deck.",
+          "serviceId": "interior-reset",
+          "tone": "graphite",
+          "beforeSrc": "/reviews/priya-before.jpg",
+          "afterSrc": "/reviews/priya-after.jpg"
+        },
+        {
+          "id": "r-jordan",
+          "author": "Jordan W.",
+          "city": "Matthews",
+          "vehicle": "2022 Ford F-150",
+          "rating": 5,
+          "quote": "On time, set up in five minutes, zero mess on the driveway. Truck hasn't looked this good since the lot.",
+          "serviceId": "wash-wax",
+          "tone": "cobalt",
+          "beforeSrc": "/reviews/jordan-before.jpg",
+          "afterSrc": "/reviews/jordan-after.jpg"
+        },
+        {
+          "id": "r-alyssa",
+          "author": "Alyssa R.",
+          "city": "Huntersville",
+          "vehicle": "2020 Mazda CX-5",
+          "rating": 5,
+          "quote": "Soul Red finally pops like it did in the showroom. Rain beads right off now.",
+          "serviceId": "correction-ceramic",
+          "tone": "crimson",
+          "beforeSrc": "/reviews/alyssa-before.jpg",
+          "afterSrc": "/reviews/alyssa-after.jpg"
+        },
+        {
+          "id": "r-dev",
+          "author": "Dev P.",
+          "city": "Mooresville",
+          "vehicle": "2018 BMW 340i",
+          "rating": 5,
+          "quote": "Black paint, zero new swirls. Proper two-bucket technique — you can tell they care.",
+          "serviceId": "wash-wax",
+          "tone": "obsidian",
+          "beforeSrc": "/reviews/dev-before.jpg",
+          "afterSrc": "/reviews/dev-after.jpg"
+        },
+        {
+          "id": "r-kendra",
+          "author": "Kendra M.",
+          "city": "Dilworth",
+          "vehicle": "2023 Honda Civic",
+          "rating": 5,
+          "quote": "Coffee stains I'd given up on came right out. Texted a quote at 8am, done by lunch.",
+          "serviceId": "interior-reset",
+          "tone": "graphite",
+          "beforeSrc": "/reviews/kendra-before.jpg",
+          "afterSrc": "/reviews/kendra-after.jpg"
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "type": "faq",
+      "eyebrow": "Quick answers",
+      "title": "Before you book",
+      "items": [
+        {
+          "id": "payment",
+          "question": "What payment methods do you take?",
+          "answer": "Apple Pay, Google Pay, all major cards, Venmo, Zelle and cash. You pay after the job, once we've walked the car together. Standard packages need no deposit; ceramic bookings hold with a $50 deposit that comes off your total."
+        },
+        {
+          "id": "water",
+          "question": "Do I need to provide water or power?",
+          "answer": "Nope. The van carries a 100-gallon deionized water tank for spot-free rinsing, a whisper-quiet generator and its own lighting. Driveway, office lot or apartment garage all work — we just need a space the size of a parking spot."
+        },
+        {
+          "id": "rain",
+          "question": "What happens if it rains?",
+          "answer": "We check radar the night before. If rain looks likely, we'll text to reschedule at no cost — or work under your garage or covered parking. Ceramic coatings need 24 dry hours, so those always get moved to a clear day."
+        },
+        {
+          "id": "radius",
+          "question": "How far do you travel?",
+          "answer": "We cover a 25-mile radius around Uptown Charlotte — Ballantyne, South End, Matthews, Mint Hill, Huntersville, Cornelius, Mooresville, Concord and Fort Mill, SC. Beyond that, a flat $1/mile travel fee applies."
+        }
+      ]
+    }
+  ]
+}

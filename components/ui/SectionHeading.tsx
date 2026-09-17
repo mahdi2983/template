@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 
 interface SectionHeadingProps {
   id: string;
-  eyebrow: string;
-  title: string;
+  eyebrow: ReactNode;
+  title: ReactNode;
   trailing?: ReactNode;
 }
 

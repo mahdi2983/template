@@ -3,22 +3,6 @@ export type ServiceAccent = "emerald" | "ice";
 export type VehicleSize = "coupe" | "suv" | "xl";
 export type PreferredDay = "today" | "tomorrow" | "week";
 
-/** Raw row as exported from the pricing Google Sheet — every cell arrives as a string. */
-export interface ServiceSheetRow {
-  id: string;
-  name: string;
-  tagline: string;
-  duration_min: string;
-  price_from: string;
-  /** Pipe-delimited list, e.g. "Foam wash|Clay bar|Sealant". */
-  features: string;
-  /** "TRUE" / "FALSE" as Sheets exports booleans. */
-  popular: string;
-  accent: string;
-  image_url?: string;
-  imageUrl?: string;
-}
-
 export interface ServiceItem {
   id: string;
   name: string;

@@ -1,10 +1,11 @@
-import { siteConfig } from "@/lib/site-config";
 import type { SiteConfig } from "@/types";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+type BusinessHours = Pick<SiteConfig, "timeZone" | "openDays" | "openHour" | "closeHour">;
+
 /** True when `date` falls inside business hours in the business's own time zone. */
-export function isOpenAt(date: Date, config: SiteConfig = siteConfig): boolean {
+export function isOpenAt(date: Date, config: BusinessHours): boolean {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: config.timeZone,
     weekday: "short",
