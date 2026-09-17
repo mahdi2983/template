@@ -15,11 +15,13 @@ interface ImageEditButtonProps {
   label?: string;
   /** Extra values written alongside the new image (e.g. turning the hero video off). */
   alsoSet?: Record<string, unknown>;
+  /** Icon-only round button, for small images such as the logo. */
+  compact?: boolean;
   className?: string;
 }
 
 /** "Change photo" pill, rendered only in the editor. The parent must be positioned. */
-export function ImageEditButton({ p, label = "Changer la photo", alsoSet, className }: ImageEditButtonProps) {
+export function ImageEditButton({ p, label = "Change photo", alsoSet, compact = false, className }: ImageEditButtonProps) {
   const api = useContentApi();
   if (!api.editing) return null;
 
@@ -27,18 +29,21 @@ export function ImageEditButton({ p, label = "Changer la photo", alsoSet, classN
     <button
       type="button"
       data-editor-ui
+      title={label}
+      aria-label={label}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         stop(event);
         api.pickImage?.(p, alsoSet);
       }}
       className={cn(
-        "absolute top-2 right-2 z-30 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/60 bg-zinc-950/85 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 shadow-lg backdrop-blur-md hover:bg-emerald-500 hover:text-zinc-950",
-        className,
+        "absolute z-30 inline-flex items-center rounded-full border border-emerald-400/60 bg-zinc-950/85 text-[11px] font-semibold text-emerald-300 shadow-lg backdrop-blur-md hover:bg-emerald-500 hover:text-zinc-950",
+        compact ? "size-6 justify-center" : "gap-1.5 px-2.5 py-1",
+        className ?? "top-2 right-2",
       )}
     >
       <Camera aria-hidden className="size-3.5" />
-      {label}
+      {compact ? null : label}
     </button>
   );
 }
@@ -66,7 +71,7 @@ export function ItemControls({ list, index, length, className, children }: ItemC
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         stop(event);
-        if (op === "remove" && !window.confirm("Supprimer cet élément ?")) return;
+        if (op === "remove" && !window.confirm("Delete this item?")) return;
         api.listOp?.(list, index, op);
       }}
       className={cn(
@@ -88,10 +93,10 @@ export function ItemControls({ list, index, length, className, children }: ItemC
       )}
     >
       {children}
-      {button("up", <ArrowUp className="size-3.5" />, "Monter", index === 0)}
-      {button("down", <ArrowDown className="size-3.5" />, "Descendre", index === length - 1)}
-      {button("duplicate", <Copy className="size-3.5" />, "Dupliquer")}
-      {button("remove", <Trash2 className="size-3.5" />, "Supprimer")}
+      {button("up", <ArrowUp className="size-3.5" />, "Move up", index === 0)}
+      {button("down", <ArrowDown className="size-3.5" />, "Move down", index === length - 1)}
+      {button("duplicate", <Copy className="size-3.5" />, "Duplicate")}
+      {button("remove", <Trash2 className="size-3.5" />, "Delete")}
     </span>
   );
 }

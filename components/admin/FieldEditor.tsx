@@ -10,67 +10,84 @@ import { cn } from "@/lib/cn";
  */
 
 const LABELS: Record<string, string> = {
-  meta: "Référencement (SEO)",
-  title: "Titre",
+  meta: "Search & sharing (SEO)",
+  title: "Title",
   description: "Description",
-  shareTitle: "Titre de partage (réseaux sociaux)",
-  shareImage: "Image de partage",
-  appTitle: "Nom sur l'écran d'accueil (iPhone)",
-  business: "Entreprise",
-  name: "Nom",
-  monogram: "Initiale du logo",
-  city: "Ville",
-  region: "Région / État",
-  phoneDisplay: "Téléphone (affiché)",
-  phoneE164: "Téléphone (format international, ex. +17045550142)",
-  hoursLabel: "Horaires (texte long)",
-  hoursShort: "Horaires (texte court)",
-  openHour: "Heure d'ouverture (0–23)",
-  closeHour: "Heure de fermeture (0–23)",
-  openDays: "Jours d'ouverture (0 = dimanche … 6 = samedi)",
-  timeZone: "Fuseau horaire",
-  serviceRadiusMiles: "Rayon d'intervention (miles)",
-  googleRating: "Note Google",
-  googleReviewCount: "Nombre d'avis Google",
-  geo: "Coordonnées GPS",
+  shareTitle: "Share title (social networks)",
+  shareImage: "Share image",
+  appTitle: "Home-screen name (iPhone)",
+  business: "Business",
+  name: "Name",
+  monogram: "Logo letter (used when no logo image)",
+  logo: "Logo image",
+  city: "City",
+  region: "State / region",
+  phoneDisplay: "Phone (displayed)",
+  phoneE164: "Phone (international format, e.g. +17045550142)",
+  hoursLabel: "Opening hours (long)",
+  hoursShort: "Opening hours (short)",
+  openHour: "Opening hour (0–23)",
+  closeHour: "Closing hour (0–23)",
+  openDays: "Open days (0 = Sunday … 6 = Saturday)",
+  timeZone: "Time zone",
+  serviceRadiusMiles: "Service radius (miles)",
+  googleRating: "Google rating",
+  googleReviewCount: "Number of Google reviews",
+  geo: "GPS coordinates",
   latitude: "Latitude",
   longitude: "Longitude",
-  services: "Forfaits",
-  id: "Identifiant technique",
-  tagline: "Accroche",
-  durationMinutes: "Durée (minutes)",
-  priceFrom: "Prix de départ ($)",
-  features: "Prestations incluses",
-  popular: "Mis en avant (« Most booked »)",
-  accent: "Couleur d'accent",
+  services: "Packages",
+  id: "Technical id",
+  tagline: "Tagline",
+  durationMinutes: "Duration (minutes)",
+  priceFrom: "Starting price ($)",
+  features: "Included services",
+  popular: "Highlighted (“Most booked”)",
+  accent: "Accent color",
   imageUrl: "Photo",
-  seoTitle: "Titre SEO (vide = automatique)",
-  seoDescription: "Description SEO (vide = description du site)",
+  seoTitle: "SEO title (empty = automatic)",
+  seoDescription: "SEO description (empty = site description)",
   blocks: "Sections",
-  items: "Éléments",
+  items: "Items",
   src: "Photo",
-  alt: "Texte alternatif (accessibilité)",
-  beforeSrc: "Photo avant",
-  afterSrc: "Photo après",
-  beforeAlt: "Texte alternatif — avant",
-  afterAlt: "Texte alternatif — après",
-  beforeLabel: "Étiquette avant",
-  afterLabel: "Étiquette après",
-  poster: "Image de fond",
-  showVideo: "Afficher la vidéo de fond",
-  ctaHref: "Lien du bouton",
-  ctaLabel: "Texte du bouton",
-  tone: "Teinte (si pas de photo)",
-  rating: "Note (1–5)",
-  serviceId: "Forfait concerné",
-  quote: "Témoignage",
-  author: "Client",
-  vehicle: "Véhicule",
-  placeholders: "Textes d'aide des champs",
-  vehicleSizes: "Gabarits de véhicule",
-  dayOptions: "Choix du jour",
-  priceMultiplier: "Coefficient de prix",
-  timeMultiplier: "Coefficient de durée",
+  alt: "Alternative text (accessibility)",
+  beforeSrc: "Before photo",
+  afterSrc: "After photo",
+  beforeAlt: "Alternative text — before",
+  afterAlt: "Alternative text — after",
+  beforeLabel: "Before label",
+  afterLabel: "After label",
+  poster: "Background image",
+  showVideo: "Show background video",
+  ctaHref: "Button link",
+  ctaLabel: "Button text",
+  tone: "Tint (when there is no photo)",
+  rating: "Rating (1–5)",
+  serviceId: "Related package",
+  quote: "Testimonial",
+  author: "Customer",
+  vehicle: "Vehicle",
+  placeholders: "Form field hints",
+  vehicleSizes: "Vehicle sizes",
+  dayOptions: "Day options",
+  priceMultiplier: "Price multiplier",
+  timeMultiplier: "Duration multiplier",
+  header: "Header",
+  footer: "Footer",
+  stickyBar: "Bottom bar",
+  serviceCard: "Package cards",
+  booking: "Booking sheet",
+  reviewModal: "Review details",
+  notifyEmail: "Owner email (receives new bookings)",
+  senderName: "Sender name",
+  replyTo: "Reply-to address for customers (empty = owner email)",
+  ownerSubject: "Owner notification — subject",
+  sendCustomerConfirmation: "Send a confirmation email to the customer",
+  customerSubject: "Confirmation — subject",
+  customerHeading: "Confirmation — heading",
+  customerIntro: "Confirmation — first paragraph",
+  customerOutro: "Confirmation — last paragraph",
+  customerFooter: "Confirmation — footer",
 };
 
 const OPTIONS: Record<string, string[]> = {
@@ -79,7 +96,9 @@ const OPTIONS: Record<string, string[]> = {
 };
 
 const HIDDEN_KEYS = new Set(["type"]);
-const IMAGE_KEY = /(src|imageUrl|poster|shareImage)$/i;
+const IMAGE_KEY = /(src|imageUrl|poster|shareImage|logo)$/i;
+/** Images the site can render without (the others must always point to a photo). */
+const OPTIONAL_IMAGE_KEYS = new Set(["logo", "imageUrl"]);
 
 export const fieldInput =
   "min-h-[38px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500/60 focus:outline-none";
@@ -157,7 +176,9 @@ export function Field({ name, path, value, ctx, depth = 0 }: FieldProps) {
   }
 
   const text = String(value ?? "");
-  if (IMAGE_KEY.test(name)) return <ImageField label={label} path={path} value={text} ctx={ctx} />;
+  if (IMAGE_KEY.test(name)) {
+    return <ImageField label={label} path={path} value={text} optional={OPTIONAL_IMAGE_KEYS.has(name)} ctx={ctx} />;
+  }
 
   const options = name === "serviceId" ? ctx.serviceOptions.map((service) => service.id) : OPTIONS[name];
   if (options) {
@@ -176,7 +197,7 @@ export function Field({ name, path, value, ctx, depth = 0 }: FieldProps) {
 
   return (
     <Labeled label={label}>
-      <TextInput key={text} value={text} long={text.length > 60} onCommit={(next) => ctx.onChange(path, next)} />
+      <TextInput key={text} value={text} long={text.length > 60 || /Intro|Outro/.test(name)} onCommit={(next) => ctx.onChange(path, next)} />
     </Labeled>
   );
 }
@@ -251,16 +272,16 @@ function ArrayField({ label, path, value, ctx, depth }: ArrayFieldProps) {
       {value.map((item, index) => (
         <div key={index} className="relative">
           <div className="absolute top-1 right-0 z-10 flex gap-0.5">
-            <IconButton title="Monter" disabled={index === 0} onClick={() => move(index, index - 1)}>
+            <IconButton title="Move up" disabled={index === 0} onClick={() => move(index, index - 1)}>
               <ArrowUp className="size-3.5" />
             </IconButton>
-            <IconButton title="Descendre" disabled={index === value.length - 1} onClick={() => move(index, index + 1)}>
+            <IconButton title="Move down" disabled={index === value.length - 1} onClick={() => move(index, index + 1)}>
               <ArrowDown className="size-3.5" />
             </IconButton>
             <IconButton
-              title="Supprimer"
+              title="Delete"
               onClick={() => {
-                if (window.confirm("Supprimer cet élément ?")) ctx.onChange(path, value.filter((_, i) => i !== index));
+                if (window.confirm("Delete this item?")) ctx.onChange(path, value.filter((_, i) => i !== index));
               }}
             >
               <Trash2 className="size-3.5" />
@@ -276,7 +297,7 @@ function ArrayField({ label, path, value, ctx, depth }: ArrayFieldProps) {
           className="mt-1 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-zinc-700 py-1.5 text-xs text-zinc-400 hover:border-emerald-500/60 hover:text-emerald-300"
         >
           <Plus className="size-3.5" />
-          Ajouter
+          Add
         </button>
       ) : null}
     </Group>
@@ -308,7 +329,15 @@ function IconButton({
   );
 }
 
-function ImageField({ label, path, value, ctx }: { label: string; path: string; value: string; ctx: FieldContext }) {
+interface ImageFieldProps {
+  label: string;
+  path: string;
+  value: string;
+  optional: boolean;
+  ctx: FieldContext;
+}
+
+function ImageField({ label, path, value, optional, ctx }: ImageFieldProps) {
   const input = useRef<HTMLInputElement>(null);
   const preview = value ? ctx.resolveSrc(value) : "";
 
@@ -323,8 +352,17 @@ function ImageField({ label, path, value, ctx }: { label: string; path: string; 
           className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-xs font-medium text-zinc-100 hover:border-emerald-500/60"
         >
           <ImageUp aria-hidden className="size-4" />
-          Choisir une photo
+          {value ? "Replace" : "Upload"}
         </button>
+        {optional && value ? (
+          <button
+            type="button"
+            onClick={() => ctx.onChange(path, "")}
+            className="inline-flex min-h-[38px] items-center rounded-xl px-2 text-xs text-zinc-400 hover:text-rose-300"
+          >
+            Remove
+          </button>
+        ) : null}
         <input
           ref={input}
           type="file"

@@ -53,7 +53,7 @@ export function ServiceBentoPricing({ base }: { base: string }) {
           </a>
         </div>
       )}
-      <AddItemButton list="site.services" template={NEW_SERVICE} label="Ajouter un forfait" className="mt-3" />
+      <AddItemButton list="site.services" template={NEW_SERVICE} label="Add package" className="mt-3" />
 
       <p className="mt-3 px-1 text-xs text-zinc-500">
         <T p={`${base}.note`} />

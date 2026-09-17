@@ -8,11 +8,11 @@ export function shortId(prefix: string): string {
 
 export const NEW_SERVICE: ServiceContent = {
   id: "new-service",
-  name: "Nouveau forfait",
-  tagline: "Décrivez ce forfait en une phrase.",
+  name: "New package",
+  tagline: "Describe this package in one sentence.",
   durationMinutes: 120,
   priceFrom: 99,
-  features: ["Première prestation incluse", "Deuxième prestation incluse"],
+  features: ["First included service", "Second included service"],
   popular: false,
   accent: "emerald",
   imageUrl: "",
@@ -20,20 +20,20 @@ export const NEW_SERVICE: ServiceContent = {
 
 export const NEW_GALLERY_ITEM: GalleryItem = {
   step: "07",
-  title: "Nouvelle étape",
-  category: "Catégorie",
-  desc: "Décrivez cette étape.",
+  title: "New step",
+  category: "Category",
+  desc: "Describe this step.",
   src: "/gallery/01-snow-foam.jpg",
-  alt: "Photo de l'étape",
+  alt: "Step photo",
 };
 
 export const NEW_REVIEW: Review = {
   id: "review",
-  author: "Prénom N.",
-  city: "Quartier",
-  vehicle: "2024 Modèle",
+  author: "First L.",
+  city: "Neighborhood",
+  vehicle: "2024 Model",
   rating: 5,
-  quote: "Le témoignage du client.",
+  quote: "The customer's testimonial.",
   serviceId: "wash-wax",
   tone: "obsidian",
   beforeSrc: "/before.jpg",
@@ -42,8 +42,8 @@ export const NEW_REVIEW: Review = {
 
 export const NEW_FAQ_ITEM: FaqItem = {
   id: "question",
-  question: "Nouvelle question ?",
-  answer: "La réponse à la question.",
+  question: "New question?",
+  answer: "The answer to the question.",
 };
 
 type Template<T extends Block> = Omit<T, "id">;
@@ -52,11 +52,11 @@ const TEMPLATES: { [K in BlockType]: Template<Extract<Block, { type: K }>> } = {
   hero: {
     type: "hero",
     badge: "Mobile detailing studio",
-    titleLine1: "Un grand titre",
-    titleLine2: "sur deux lignes.",
-    text: "Un paragraphe d'introduction pour cette page.",
+    titleLine1: "A big headline",
+    titleLine2: "on two lines.",
+    text: "An introduction paragraph for this page.",
     chips: ["Water onboard", "Power onboard", "Fully insured"],
-    ctaLabel: "Voir les forfaits",
+    ctaLabel: "See packages & pricing",
     ctaHref: "/#services",
     poster: "/hero-poster.jpg",
     showVideo: true,
@@ -66,20 +66,20 @@ const TEMPLATES: { [K in BlockType]: Template<Extract<Block, { type: K }>> } = {
   },
   text: {
     type: "text",
-    eyebrow: "Sur-titre",
-    title: "Titre de la section",
-    body: "Votre texte ici. Cliquez pour le modifier.",
+    eyebrow: "Eyebrow",
+    title: "Section title",
+    body: "Your text here. Click to edit it.",
   },
   image: {
     type: "image",
     src: "/hero-poster.jpg",
-    alt: "Description de l'image",
-    caption: "Légende de l'image",
+    alt: "Image description",
+    caption: "Image caption",
   },
   cta: {
     type: "cta",
-    title: "Prêt à réserver ?",
-    text: "Estimation instantanée, sans acompte.",
+    title: "Ready to book?",
+    text: "Instant estimate, no deposit required.",
     buttonLabel: "Instant Estimate",
   },
   beforeAfter: {
@@ -110,11 +110,11 @@ const TEMPLATES: { [K in BlockType]: Template<Extract<Block, { type: K }>> } = {
   },
   gallery: {
     type: "gallery",
-    eyebrow: "Galerie",
-    title: "Titre de la galerie",
+    eyebrow: "Gallery",
+    title: "Gallery title",
     hint: "Tap to expand",
-    introTitle: "Titre d'introduction",
-    introText: "Texte d'introduction de la galerie.",
+    introTitle: "Introduction title",
+    introText: "Gallery introduction text.",
     stepLabel: "Step",
     items: [
       { ...NEW_GALLERY_ITEM, step: "01" },
@@ -125,7 +125,7 @@ const TEMPLATES: { [K in BlockType]: Template<Extract<Block, { type: K }>> } = {
   reviews: {
     type: "reviews",
     eyebrow: "Google reviews",
-    title: "Avis clients",
+    title: "Customer reviews",
     hint: "Tap any review",
     countLabel: "reviews on Google",
     verifiedText: "Every review from a verified customer",
@@ -135,22 +135,22 @@ const TEMPLATES: { [K in BlockType]: Template<Extract<Block, { type: K }>> } = {
   faq: {
     type: "faq",
     eyebrow: "Quick answers",
-    title: "Questions fréquentes",
+    title: "Frequently asked questions",
     items: [{ ...NEW_FAQ_ITEM, id: "question-1" }] satisfies FaqBlock["items"],
   },
 };
 
 /** Labels shown in the "Add a section" menu, in display order. */
 export const BLOCK_CHOICES: { type: BlockType; label: string; hint: string }[] = [
-  { type: "hero", label: "Grand titre", hint: "Bandeau d'accroche avec image de fond" },
-  { type: "text", label: "Texte", hint: "Titre + paragraphe" },
-  { type: "image", label: "Image", hint: "Une photo avec légende" },
-  { type: "cta", label: "Appel à l'action", hint: "Bouton de réservation" },
-  { type: "services", label: "Forfaits & prix", hint: "Les cartes de services" },
-  { type: "beforeAfter", label: "Avant / Après", hint: "Comparateur à glisser" },
-  { type: "gallery", label: "Galerie", hint: "Grille de photos" },
-  { type: "reviews", label: "Avis clients", hint: "Défilement de témoignages" },
-  { type: "faq", label: "FAQ", hint: "Questions / réponses" },
+  { type: "hero", label: "Hero", hint: "Headline banner with background image" },
+  { type: "text", label: "Text", hint: "Heading + paragraph" },
+  { type: "image", label: "Image", hint: "One photo with a caption" },
+  { type: "cta", label: "Call to action", hint: "Booking button" },
+  { type: "services", label: "Packages & pricing", hint: "The service cards" },
+  { type: "beforeAfter", label: "Before / After", hint: "Drag-to-compare slider" },
+  { type: "gallery", label: "Gallery", hint: "Photo grid" },
+  { type: "reviews", label: "Reviews", hint: "Scrolling testimonials" },
+  { type: "faq", label: "FAQ", hint: "Questions & answers" },
 ];
 
 export function createBlock(type: BlockType): Block {

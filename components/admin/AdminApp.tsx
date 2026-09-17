@@ -24,8 +24,8 @@ import { focusRing, pressable, surface } from "@/lib/styles";
 
 const DEVICES = [
   { id: "mobile", label: "Mobile", width: "390px", icon: Smartphone },
-  { id: "tablet", label: "Tablette", width: "768px", icon: Tablet },
-  { id: "desktop", label: "Ordinateur", width: "100%", icon: Monitor },
+  { id: "tablet", label: "Tablet", width: "768px", icon: Tablet },
+  { id: "desktop", label: "Desktop", width: "100%", icon: Monitor },
 ] as const;
 
 type DeviceId = (typeof DEVICES)[number]["id"];
@@ -51,7 +51,8 @@ export function AdminApp() {
       if (store.changeCount() > 0 || store.getState().publish.state === "running") event.preventDefault();
     };
     const shortcuts = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.target instanceof HTMLInputElement) return;
+      const target = event.target as HTMLElement;
+      if (!(event.ctrlKey || event.metaKey) || target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
       if (event.key.toLowerCase() === "z") {
         event.preventDefault();
         if (event.shiftKey) store.redo();
@@ -74,15 +75,15 @@ export function AdminApp() {
             <p className="text-sm text-rose-300">{state.error}</p>
             <div className="mt-4 flex justify-center gap-2">
               <button type="button" onClick={() => void store.load()} className={toolbarButton}>
-                Réessayer
+                Retry
               </button>
               <Link href="/admin/login" className={toolbarButton}>
-                Se reconnecter
+                Sign in again
               </Link>
             </div>
           </div>
         ) : (
-          <Loader2 aria-label="Chargement" className="size-6 animate-spin text-emerald-400" />
+          <Loader2 aria-label="Loading" className="size-6 animate-spin text-emerald-400" />
         )}
       </main>
     );
@@ -91,14 +92,20 @@ export function AdminApp() {
   const pages = Object.values(state.draft.pages).sort((a, b) =>
     a.slug === "home" ? -1 : b.slug === "home" ? 1 : a.title.localeCompare(b.title),
   );
+  const logo = state.draft.site.business.logo ? store.resolveSrc(state.draft.site.business.logo) : "";
   const width = DEVICES.find((item) => item.id === device)!.width;
   const publishing = state.publish.state === "running";
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <header className="z-20 flex flex-wrap items-center gap-2 border-b border-zinc-800/70 bg-zinc-950/90 px-3 py-2 backdrop-blur-xl">
-        <span className="mr-1 grid size-9 place-items-center rounded-xl bg-linear-to-br from-emerald-400 to-sky-400 text-sm font-bold text-zinc-950">
-          {state.draft.site.business.monogram}
+        <span className="relative mr-1 grid size-9 place-items-center overflow-hidden rounded-xl bg-linear-to-br from-emerald-400 to-sky-400 text-sm font-bold text-zinc-950">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- may be a local blob: preview
+            <img src={logo} alt="" className="size-full bg-zinc-950 object-contain p-0.5" />
+          ) : (
+            state.draft.site.business.monogram
+          )}
         </span>
 
         <label className="sr-only" htmlFor="page-select">
@@ -115,23 +122,23 @@ export function AdminApp() {
         >
           {pages.map((page) => (
             <option key={page.slug} value={page.slug}>
-              {page.slug === "home" ? "Accueil" : page.title}
+              {page.slug === "home" ? "Home" : page.title}
             </option>
           ))}
-          <option value="__new">+ Nouvelle page…</option>
+          <option value="__new">+ New page…</option>
         </select>
 
         <a
           href={state.slug === "home" ? "/" : `/${state.slug}`}
           target="_blank"
           rel="noreferrer"
-          title="Voir la page en ligne"
+          title="Open the live page"
           className={iconButton}
         >
           <ExternalLink aria-hidden className="size-4" />
         </a>
 
-        <div className="flex rounded-xl border border-zinc-800 bg-zinc-900 p-0.5" role="group" aria-label="Appareil">
+        <div className="flex rounded-xl border border-zinc-800 bg-zinc-900 p-0.5" role="group" aria-label="Device">
           {DEVICES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -149,12 +156,12 @@ export function AdminApp() {
           ))}
         </div>
 
-        <button type="button" title="Annuler (Ctrl+Z)" onClick={store.undo} disabled={!state.past.length} className={iconButton}>
+        <button type="button" title="Undo (Ctrl+Z)" onClick={store.undo} disabled={!state.past.length} className={iconButton}>
           <Undo2 aria-hidden className="size-4" />
         </button>
         <button
           type="button"
-          title="Rétablir (Ctrl+Shift+Z)"
+          title="Redo (Ctrl+Shift+Z)"
           onClick={store.redo}
           disabled={!state.future.length}
           className={iconButton}
@@ -165,12 +172,12 @@ export function AdminApp() {
         <div className="ml-auto flex items-center gap-2">
           {state.mode === "local" ? (
             <span className="hidden rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 sm:inline">
-              Mode local
+              Local mode
             </span>
           ) : null}
           <button type="button" onClick={() => store.setSettingsOpen(true)} className={toolbarButton}>
             <Settings2 aria-hidden className="size-4" />
-            <span className="hidden sm:inline">Réglages</span>
+            <span className="hidden sm:inline">Settings</span>
           </button>
           <button
             type="button"
@@ -183,13 +190,13 @@ export function AdminApp() {
             )}
           >
             {publishing ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <Rocket aria-hidden className="size-4" />}
-            Publier
+            Publish
             {changes > 0 ? (
               <span className="rounded-full bg-zinc-950/20 px-1.5 text-xs">{changes}</span>
             ) : null}
           </button>
           <form action={logout}>
-            <button type="submit" title="Se déconnecter" className={iconButton}>
+            <button type="submit" title="Sign out" className={iconButton}>
               <LogOut aria-hidden className="size-4" />
             </button>
           </form>
@@ -198,13 +205,13 @@ export function AdminApp() {
 
       <div className="relative flex-1 overflow-hidden bg-zinc-950/60 p-3">
         <iframe
-          title="Aperçu modifiable du site"
+          title="Editable site preview"
           src="/admin/canvas"
           className="mx-auto block h-full rounded-2xl border border-zinc-800 bg-[#09090b] shadow-2xl transition-[width] duration-300"
           style={{ width, maxWidth: "100%" }}
         />
         <p className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-zinc-900/90 px-3 py-1 text-[11px] text-zinc-400 shadow-lg">
-          Cliquez sur un texte pour le modifier · 📷 pour changer une photo
+          Click any text to edit it · 📷 to change a photo
         </p>
       </div>
 
@@ -213,7 +220,7 @@ export function AdminApp() {
           {state.publish.message}
           {state.publish.url ? (
             <a href={state.publish.url} target="_blank" rel="noreferrer" className="ml-2 underline">
-              Voir le commit
+              View commit
             </a>
           ) : null}
         </Toast>
@@ -243,7 +250,7 @@ function Toast({ tone, onClose, children }: { tone: string; onClose?: () => void
     >
       <p className="flex-1">{children}</p>
       {onClose ? (
-        <button type="button" onClick={onClose} aria-label="Fermer" className="text-current opacity-70 hover:opacity-100">
+        <button type="button" onClick={onClose} aria-label="Close" className="text-current opacity-70 hover:opacity-100">
           <X className="size-4" />
         </button>
       ) : null}
@@ -269,38 +276,37 @@ function NewPageDialog({ store, onClose }: { store: EditorStore; onClose: () => 
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-lg font-semibold text-zinc-100">
             <FilePlus2 aria-hidden className="size-5 text-emerald-400" />
-            Nouvelle page
+            New page
           </h2>
-          <button type="button" onClick={onClose} aria-label="Fermer" className="text-zinc-400 hover:text-zinc-100">
+          <button type="button" onClick={onClose} aria-label="Close" className="text-zinc-400 hover:text-zinc-100">
             <X className="size-5" />
           </button>
         </div>
         <label className="mt-4 block text-xs font-medium text-zinc-400">
-          Titre
+          Title
           <input
             autoFocus
             required
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Ex. Céramique"
+            placeholder="e.g. Ceramic coating"
             className={inputClass}
           />
         </label>
         <label className="mt-3 block text-xs font-medium text-zinc-400">
-          Adresse (facultatif)
+          Address (optional)
           <div className="mt-1 flex items-center rounded-xl border border-zinc-800 bg-zinc-950/60 pl-3 text-sm text-zinc-500 focus-within:border-emerald-500/60">
             /
             <input
               value={slug}
               onChange={(event) => setSlug(event.target.value)}
-              placeholder="ceramique"
+              placeholder="ceramic-coating"
               className="min-h-[40px] w-full bg-transparent px-1 text-zinc-100 focus:outline-none"
             />
           </div>
         </label>
         <p className="mt-2 text-[11px] text-zinc-500">
-          La page est créée avec un titre, un texte et un bouton de réservation — ajoutez ensuite les sections de votre
-          choix.
+          The page starts with a hero, a text section and a booking button — then add any sections you like.
         </p>
         {error ? <p className="mt-2 text-xs text-rose-300">{error}</p> : null}
         <button
@@ -311,7 +317,7 @@ function NewPageDialog({ store, onClose }: { store: EditorStore; onClose: () => 
             focusRing,
           )}
         >
-          Créer la page
+          Create page
         </button>
       </form>
     </div>

@@ -50,7 +50,7 @@ export function HeroBento({ base }: { base: string }) {
           <div className="absolute inset-0 bg-radial-[ellipse_80%_60%_at_20%_20%] from-emerald-500/10 via-transparent to-transparent" />
         </div>
 
-        <ImageEditButton p={`${base}.poster`} label="Image de fond" alsoSet={{ [`${base}.showVideo`]: false }} />
+        <ImageEditButton p={`${base}.poster`} label="Background image" alsoSet={{ [`${base}.showVideo`]: false }} />
 
         <div
           aria-hidden
@@ -95,7 +95,7 @@ export function HeroBento({ base }: { base: string }) {
             );
           })}
         </ul>
-        <AddItemButton list={`${base}.chips`} template="Nouvel atout" label="Ajouter un atout" className="relative mt-2" />
+        <AddItemButton list={`${base}.chips`} template="New highlight" label="Add highlight" className="relative mt-2" />
 
         <a
           href={block.ctaHref}

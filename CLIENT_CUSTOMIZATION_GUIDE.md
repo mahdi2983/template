@@ -11,12 +11,12 @@
 - **Content:** every text, price and photo path lives in `content/site.json` and `content/pages/*.json`.
 - **Visual editor:** `/admin` (password-protected) shows the real site; the client clicks any text to edit it,
   clicks 📷 to replace a photo from their computer, and creates new pages from the existing sections.
-- **Publishing:** the **Publier** button commits the content (and uploaded photos) to GitHub through the API;
+- **Publishing:** the **Publish** button commits the content (and uploaded photos) to GitHub through the API;
   Vercel redeploys automatically in 1–2 minutes. GitHub is the database — no CMS, no storage bucket.
 - **Transactional Booking:** Resend API server action (`app/actions/book.ts`) delivering instant dual-confirmation emails.
 
 ```
-Client ──► /admin (iframe preview, click to edit) ──► Publier
+Client ──► /admin (iframe preview, click to edit) ──► Publish
                                                         │  1 commit: content/*.json + public/uploads/*
                                                         ▼
                                                  GitHub repo ──► Vercel build ──► live site
@@ -30,15 +30,16 @@ Client ──► /admin (iframe preview, click to edit) ──► Publier
 Everything can be done from `/admin` once deployed:
 - **Click a text** → edit in place (Enter to validate, Esc to cancel).
 - **📷 button** on a photo → pick a file; it is resized to WebP (max 2000 px) in the browser.
-- **Réglages** (drawer) → business info (phone, hours, city, Google rating), SEO, prices/durations,
+- **Settings** (drawer) → business info (phone, hours, city, Google rating), SEO, prices/durations,
   alt texts, and the copy of the booking sheet.
+- **Logo:** the small 📷 on the header logo uploads an image (Settings → Business → Remove to go back to the letter).
 - Hover a card → ↑ ↓ duplicate / delete. Dashed buttons add items (FAQ, reviews, gallery photos, packages…).
 
 To pre-fill a new client before handing over, you can also edit `content/site.json` directly.
 
 ### 2. New pages
-Page menu → **+ Nouvelle page…** → title (+ optional URL). The page starts with a hero, a text block and a
-booking call-to-action; **+ Ajouter une section** inserts any existing section type (packages, before/after,
+Page menu → **+ New page…** → title (+ optional URL). The page starts with a hero, a text block and a
+booking call-to-action; **+ Add section** inserts any existing section type (packages, before/after,
 gallery, reviews, FAQ, image, text, CTA). Pages are served at `/<slug>`.
 
 Sections only expose text and images: colors, fonts, sizes and layout always come from the components.
@@ -48,10 +49,16 @@ In `.env.local` (and Vercel environment variables):
 ```env
 RESEND_API_KEY="re_xxxxxxxxxxxx"
 RESEND_FROM_EMAIL="Apex Detailing <booking@clientdomain.com>"
-ARTISAN_EMAIL="client-inbox@gmail.com"
+ARTISAN_EMAIL="client-inbox@gmail.com"   # fallback when no owner email is set in /admin
 ```
 - During onboarding/testing: use `Apex Detailing <onboarding@resend.dev>`.
 - In production: add client domain to [Resend Domains](https://resend.com/domains) and set DNS DKIM records.
+
+**Booking emails (Settings → Emails):** owner email that receives new bookings, sender name, reply-to
+address, subjects and texts of the customer confirmation (placeholders `{name} {service} {estimate} {vehicle}
+{date} {phone} {business}`), on/off switch for the customer confirmation, and a **Send me a test confirmation**
+button. These settings live in `content/email.json`, which is never sent to visitors' browsers. The Resend API
+key and the sender *address* stay in environment variables (the address must be on a domain verified in Resend).
 
 ### 4. Admin & publish button
 1. Create a **fine-grained GitHub token**: *Settings → Developer settings → Fine-grained tokens*,
@@ -66,8 +73,8 @@ ARTISAN_EMAIL="client-inbox@gmail.com"
    ```
 3. Make sure the Vercel project deploys `GITHUB_BRANCH` to production (default for `main`).
 
-Local development: without `GITHUB_TOKEN`, **Publier** writes the JSON files and images straight to disk
-(badge "Mode local") so the whole flow can be tested with `npm run dev`.
+Local development: without `GITHUB_TOKEN`, **Publish** writes the JSON files and images straight to disk
+(badge "Local mode") so the whole flow can be tested with `npm run dev`.
 
 ---
 
@@ -93,10 +100,10 @@ Save **`https://<client-domain>/admin`** on the client's computer and phone home
 and give them the password.
 
 The client can now:
-- Change any text, price or photo, then click **Publier** — the site is live 1–2 minutes later.
+- Change any text, price or photo, then click **Publish** — the site is live 1–2 minutes later.
 - Create new pages that automatically match the site design.
 - Undo mistakes (Ctrl+Z / ↶) before publishing; unpublished drafts survive a page reload.
 - Receive customer booking inquiries instantly in their inbox and via SMS.
 
-If two people edit at the same time, the second **Publier** is refused with a message asking to reload —
+If two people edit at the same time, the second **Publish** is refused with a message asking to reload —
 no one silently overwrites the other.

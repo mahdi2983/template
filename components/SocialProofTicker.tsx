@@ -142,7 +142,7 @@ export function SocialProofTicker({ base }: { base: string }) {
       <AddItemButton
         list={`${base}.items`}
         template={{ ...NEW_REVIEW, id: `review-${reviews.length + 1}` }}
-        label="Ajouter un avis"
+        label="Add review"
         className="mt-3"
       />
 

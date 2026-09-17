@@ -76,7 +76,7 @@ export function ServiceCard({ index, count }: ServiceCardProps) {
               <T p="site.serviceCard.popularBadge" />
             </span>
           ) : null}
-          <ImageEditButton p={`${base}.imageUrl`} label="Ajouter une photo" className="top-12" />
+          <ImageEditButton p={`${base}.imageUrl`} label="Add photo" className="top-12 right-2" />
         </div>
       )}
 
@@ -117,7 +117,7 @@ export function ServiceCard({ index, count }: ServiceCardProps) {
             />
           </li>
         ))}
-        <AddItemButton list={`${base}.features`} template="Nouvelle prestation" label="Ajouter une ligne" />
+        <AddItemButton list={`${base}.features`} template="New included service" label="Add line" />
       </ul>
 
       <button

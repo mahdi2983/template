@@ -201,8 +201,8 @@ export function BeforeAfterInteractive({ base, initialPosition = 50 }: BeforeAft
             </span>
           </div>
 
-          <ImageEditButton p={`${base}.beforeSrc`} label="Photo avant" className="top-auto right-auto bottom-3 left-3" />
-          <ImageEditButton p={`${base}.afterSrc`} label="Photo après" className="top-auto bottom-3" />
+          <ImageEditButton p={`${base}.beforeSrc`} label="Before photo" className="bottom-3 left-3" />
+          <ImageEditButton p={`${base}.afterSrc`} label="After photo" className="right-3 bottom-3" />
         </div>
 
         <dl className="grid grid-cols-3 gap-2 p-1 pt-3">

@@ -11,7 +11,7 @@
 - **Interactive Before / After Slider:** High-precision, touch-optimized comparison slider with dual-tone obsidian overlays.
 - **Live Booking System (Resend):** Fully automated server action delivering customer confirmation emails and instant artisan lead alerts with instant vehicle sizing estimates.
 - **Visual Admin (`/admin`):** Password-protected live preview of the site — click any text to edit it, replace photos from your computer, add sections and create new pages that match the design.
-- **One-Click Publish:** The **Publier** button commits the changes to GitHub and Vercel redeploys automatically — no database, no storage bucket.
+- **One-Click Publish:** The **Publish** button commits the changes to GitHub and Vercel redeploys automatically — no database, no storage bucket.
 - **Zero Maintenance Architecture:** 100% serverless, zero SQL database, zero monthly hosting costs on Vercel hobby tier.
 
 ---
@@ -54,7 +54,8 @@ To adapt this template for a new client in under 10 minutes, refer to the comple
 | Area | Target File | Description |
 |---|---|---|
 | **Everything (recommended)** | `/admin` | Visual editor: texts, photos, prices, pages |
-| **Identity, packages, shared copy** | `content/site.json` | Business info, services, booking sheet labels |
+| **Identity, packages, shared copy** | `content/site.json` | Business info, logo, services, booking sheet labels |
+| **Booking emails** | `content/email.json` | Owner email, sender name, confirmation texts (server-only) |
 | **Pages & sections** | `content/pages/*.json` | `home.json` is `/`; other files are `/<slug>` |
 | **Uploaded photos** | `public/uploads/` | Written by the Publish button |
 | **Section design** | `components/` | Colors, fonts and layout (never exposed in the admin) |
@@ -67,7 +68,7 @@ To adapt this template for a new client in under 10 minutes, refer to the comple
 |---|---|
 | `RESEND_API_KEY` | Resend API key for automated booking confirmations |
 | `RESEND_FROM_EMAIL` | Verified sender email (e.g. `Apex Detailing <booking@domain.com>`) |
-| `ARTISAN_EMAIL` | Detailer's email where new leads are sent |
+| `ARTISAN_EMAIL` | Fallback recipient for new leads (the owner email set in `/admin` → Settings → Emails wins) |
 | `ADMIN_PASSWORD` | Password for `/admin` |
 | `ADMIN_SECRET` | 32+ random characters signing the admin session cookie |
 | `GITHUB_TOKEN` | Fine-grained token, this repo only, *Contents: Read and write* (empty in local dev = write to disk) |

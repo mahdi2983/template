@@ -50,6 +50,20 @@ function CanvasContent({ store }: { store: EditorStore }) {
     setPopover(null);
   }, [slug]);
 
+  // Ctrl+Z / Ctrl+Shift+Z also work while the focus is inside the preview (except while typing).
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "z") return;
+      const target = event.target as HTMLElement;
+      if (target.isContentEditable || target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      event.preventDefault();
+      if (event.shiftKey) store.redo();
+      else store.undo();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [store]);
+
   const api = useMemo<ContentApi | null>(
     () =>
       draft && page
@@ -173,7 +187,7 @@ function TextPopover({ popover, initial, onCommit, onClose }: TextPopoverProps) 
         }}
         className="min-h-[40px] w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-100 focus:border-emerald-500 focus:outline-none"
       />
-      <p className="px-1 pt-1.5 text-[10px] text-zinc-500">Entrée pour valider · Échap pour annuler</p>
+      <p className="px-1 pt-1.5 text-[10px] text-zinc-500">Enter to save · Esc to cancel</p>
     </div>
   );
 }

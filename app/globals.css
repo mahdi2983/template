@@ -176,7 +176,7 @@
 }
 
 [data-editing] .apex-editable:empty::before {
-  content: "Cliquer pour écrire…";
+  content: "Click to type…";
   opacity: 0.45;
 }
 

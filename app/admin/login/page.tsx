@@ -15,11 +15,11 @@ export default function LoginPage() {
         <span className="grid size-11 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-400">
           <Lock aria-hidden className="size-5" />
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-100">Espace admin</h1>
-        <p className="mt-1 text-sm text-zinc-400">Entrez le mot de passe pour modifier le site.</p>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-zinc-100">Admin</h1>
+        <p className="mt-1 text-sm text-zinc-400">Enter the password to edit the website.</p>
 
         <label htmlFor="password" className="sr-only">
-          Mot de passe
+          Password
         </label>
         <input
           id="password"
@@ -28,7 +28,7 @@ export default function LoginPage() {
           required
           autoFocus
           autoComplete="current-password"
-          placeholder="Mot de passe"
+          placeholder="Password"
           className="mt-5 min-h-[48px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
         />
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
           )}
         >
           {pending ? <Loader2 aria-hidden className="size-4 animate-spin" /> : null}
-          Se connecter
+          Sign in
         </button>
       </form>
     </main>

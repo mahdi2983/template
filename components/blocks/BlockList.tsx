@@ -72,7 +72,7 @@ function AddBlockMenu({ index }: { index: number }) {
         className="inline-flex items-center gap-1 rounded-full border border-dashed border-emerald-500/50 bg-zinc-950/80 px-3 py-1 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-500/10"
       >
         <Plus aria-hidden className="size-3.5" />
-        Ajouter une section
+        Add section
       </button>
       {open ? (
         <div className="mt-2 grid w-full grid-cols-2 gap-2 rounded-3xl border border-zinc-700 bg-zinc-900/95 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-3">

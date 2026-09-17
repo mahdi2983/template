@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import defaultEmailJson from "@/content/email.json";
+import type { EmailSettings } from "@/lib/email";
 import type { PageContent, SiteContent } from "@/types/content";
 
 /**
@@ -12,6 +14,7 @@ import type { PageContent, SiteContent } from "@/types/content";
 export interface ContentSnapshot {
   site: SiteContent;
   pages: Record<string, PageContent>;
+  email: EmailSettings;
   /** Fingerprint of the stored content files, used to detect concurrent edits. */
   version: string;
 }
@@ -19,6 +22,7 @@ export interface ContentSnapshot {
 export interface PublishInput {
   site: SiteContent;
   pages: Record<string, PageContent>;
+  email: EmailSettings;
   version: string;
   /** Uploaded images: public src ("/uploads/x.webp") → ref returned by `storeImage`. */
   images: Record<string, string>;
@@ -32,8 +36,10 @@ export interface PublishResult {
 export class ConflictError extends Error {}
 
 const SITE_FILE = "content/site.json";
+const EMAIL_FILE = "content/email.json";
 const PAGES_DIR = "content/pages";
 
+const defaultEmail = defaultEmailJson as EmailSettings;
 const toJson = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 const fingerprint = (entries: string[]) => createHash("sha256").update(entries.sort().join("\n")).digest("hex");
 
@@ -58,7 +64,7 @@ export function storageMode(): "github" | "local" | "unconfigured" {
 function requireMode(): "github" | "local" {
   const mode = storageMode();
   if (mode === "unconfigured") {
-    throw new Error("Publication non configurée : ajoutez GITHUB_TOKEN et GITHUB_REPO dans Vercel.");
+    throw new Error("Publishing is not configured: add GITHUB_TOKEN and GITHUB_REPO in Vercel.");
   }
   return mode;
 }
@@ -79,7 +85,7 @@ async function gh<T>(config: GitHubConfig, endpoint: string, init?: RequestInit 
   if (!response.ok) {
     const detail = await response.text();
     console.error(`[admin] GitHub ${init?.method ?? "GET"} ${endpoint} → ${response.status}: ${detail}`);
-    throw new Error(`GitHub a répondu ${response.status}. Vérifiez le token et le nom du dépôt.`);
+    throw new Error(`GitHub responded ${response.status}. Check the token and the repository name.`);
   }
   return (init?.raw ? response.text() : response.json()) as Promise<T>;
 }
@@ -98,12 +104,15 @@ async function githubListing(config: GitHubConfig) {
     gh<GitHubEntry[]>(config, `/contents/${PAGES_DIR}${ref}`),
   ]);
   const site = root.find((entry) => entry.path === SITE_FILE);
-  if (!site) throw new Error(`${SITE_FILE} introuvable sur la branche ${config.branch}.`);
+  if (!site) throw new Error(`${SITE_FILE} not found on branch ${config.branch}.`);
+  const email = root.find((entry) => entry.path === EMAIL_FILE);
   const pageFiles = pages.filter((entry) => entry.type === "file" && entry.name.endsWith(".json"));
+  const tracked = [site, ...(email ? [email] : []), ...pageFiles];
   return {
     site,
+    hasEmail: Boolean(email),
     pageFiles,
-    version: fingerprint([site, ...pageFiles].map((entry) => `${entry.path}:${entry.sha}`)),
+    version: fingerprint(tracked.map((entry) => `${entry.path}:${entry.sha}`)),
   };
 }
 
@@ -112,17 +121,23 @@ async function githubLoad(config: GitHubConfig): Promise<ContentSnapshot> {
   const ref = `?ref=${encodeURIComponent(config.branch)}`;
   const read = async (file: string) => JSON.parse(await gh<string>(config, `/contents/${file}${ref}`, { raw: true }));
 
-  const [site, ...pageList] = await Promise.all([
+  const [site, email, ...pageList] = await Promise.all([
     read(SITE_FILE) as Promise<SiteContent>,
+    (listing.hasEmail ? read(EMAIL_FILE) : Promise.resolve(defaultEmail)) as Promise<EmailSettings>,
     ...listing.pageFiles.map((entry) => read(entry.path) as Promise<PageContent>),
   ]);
-  return { site, pages: Object.fromEntries(pageList.map((page) => [page.slug, page])), version: listing.version };
+  return {
+    site,
+    email: { ...defaultEmail, ...email },
+    pages: Object.fromEntries(pageList.map((page) => [page.slug, page])),
+    version: listing.version,
+  };
 }
 
 async function githubPublish(config: GitHubConfig, input: PublishInput): Promise<PublishResult> {
   const listing = await githubListing(config);
   if (listing.version !== input.version) {
-    throw new ConflictError("Le contenu a été modifié ailleurs depuis l'ouverture de l'éditeur.");
+    throw new ConflictError("The content was changed elsewhere since the editor was opened.");
   }
 
   const head = await gh<{ object: { sha: string } }>(config, `/git/ref/heads/${config.branch}`);
@@ -131,6 +146,7 @@ async function githubPublish(config: GitHubConfig, input: PublishInput): Promise
   const keptPaths = new Set(Object.keys(input.pages).map((slug) => `${PAGES_DIR}/${slug}.json`));
   const tree = [
     { path: SITE_FILE, mode: "100644", type: "blob", content: toJson(input.site) },
+    { path: EMAIL_FILE, mode: "100644", type: "blob", content: toJson(input.email) },
     ...Object.values(input.pages).map((page) => ({
       path: `${PAGES_DIR}/${page.slug}.json`,
       mode: "100644",
@@ -175,7 +191,7 @@ async function localPageFiles(): Promise<string[]> {
 }
 
 async function localRead(): Promise<{ raw: Record<string, string>; version: string }> {
-  const files = [SITE_FILE, ...(await localPageFiles())];
+  const files = [SITE_FILE, EMAIL_FILE, ...(await localPageFiles())];
   const raw = Object.fromEntries(
     await Promise.all(files.map(async (file) => [file, await readFile(path.join(root, file), "utf8")] as const)),
   );
@@ -186,10 +202,11 @@ async function localRead(): Promise<{ raw: Record<string, string>; version: stri
 async function localLoad(): Promise<ContentSnapshot> {
   const { raw, version } = await localRead();
   const pages = Object.entries(raw)
-    .filter(([file]) => file !== SITE_FILE)
+    .filter(([file]) => file.startsWith(`${PAGES_DIR}/`))
     .map(([, text]) => JSON.parse(text) as PageContent);
   return {
     site: JSON.parse(raw[SITE_FILE]!) as SiteContent,
+    email: { ...defaultEmail, ...(JSON.parse(raw[EMAIL_FILE]!) as EmailSettings) },
     pages: Object.fromEntries(pages.map((page) => [page.slug, page])),
     version,
   };
@@ -198,9 +215,10 @@ async function localLoad(): Promise<ContentSnapshot> {
 async function localPublish(input: PublishInput): Promise<PublishResult> {
   const current = await localRead();
   if (current.version !== input.version) {
-    throw new ConflictError("Le contenu a été modifié ailleurs depuis l'ouverture de l'éditeur.");
+    throw new ConflictError("The content was changed elsewhere since the editor was opened.");
   }
   await writeFile(path.join(root, SITE_FILE), toJson(input.site));
+  await writeFile(path.join(root, EMAIL_FILE), toJson(input.email));
   const kept = new Set<string>();
   for (const page of Object.values(input.pages)) {
     const file = `${PAGES_DIR}/${page.slug}.json`;

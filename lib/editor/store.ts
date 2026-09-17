@@ -1,14 +1,23 @@
 "use client";
 
-import { loadContent, publish as publishAction, uploadImage } from "@/app/admin/actions";
+import {
+  loadContent,
+  publish as publishAction,
+  sendTestEmail as sendTestEmailAction,
+  uploadImage,
+  type EmailEnvironment,
+} from "@/app/admin/actions";
 import { createBlock, shortId } from "@/lib/blocks";
 import { getAt, setAt, type ListOp } from "@/lib/editor/content-context";
 import { imageDb } from "@/lib/editor/idb";
+import type { EmailSettings } from "@/lib/email";
 import type { PageContent, SiteContent } from "@/types/content";
 
 export interface Draft {
   site: SiteContent;
   pages: Record<string, PageContent>;
+  /** Booking email settings (content/email.json) — never rendered on the public site. */
+  email: EmailSettings;
 }
 
 export interface PublishStatus {
@@ -21,6 +30,7 @@ export interface EditorState {
   status: "loading" | "ready" | "error";
   error: string | null;
   mode: string;
+  emailEnv: EmailEnvironment | null;
   version: string;
   /** Last published content. */
   base: Draft | null;
@@ -34,7 +44,8 @@ export interface EditorState {
   settingsOpen: boolean;
 }
 
-const DRAFT_KEY = "apex-admin-draft-v1";
+const DRAFT_KEY = "apex-admin-draft-v2";
+const RESERVED_SLUGS = ["home", "admin", "api", "uploads", "gallery", "reviews", "icon"];
 const HISTORY_LIMIT = 100;
 const MAX_IMAGE_EDGE = 2000;
 const MAX_IMAGE_BYTES = 2_500_000;
@@ -104,6 +115,7 @@ export class EditorStore {
     status: "loading",
     error: null,
     mode: "",
+    emailEnv: null,
     version: "",
     base: null,
     draft: null,
@@ -125,7 +137,10 @@ export class EditorStore {
   getState = () => this.state;
 
   private set(patch: Partial<EditorState>) {
-    this.state = { ...this.state, ...patch };
+    const next = { ...this.state, ...patch };
+    // Undo/redo/discard can remove the page being edited (e.g. undoing its creation): fall back to home.
+    if (next.draft && !next.draft.pages[next.slug]) next.slug = "home";
+    this.state = next;
     for (const listener of this.listeners) {
       // Listeners may belong to a canvas iframe that has since been unloaded.
       try {
@@ -155,8 +170,8 @@ export class EditorStore {
       this.set({ status: "error", error: result.error });
       return;
     }
-    const { site, pages, version, mode } = result.data;
-    const base: Draft = { site, pages };
+    const { site, pages, email, version, mode, emailEnv } = result.data;
+    const base: Draft = { site, pages, email };
     let draft = base;
 
     const saved = readSavedDraft();
@@ -165,7 +180,7 @@ export class EditorStore {
       if (
         sameBase ||
         window.confirm(
-          "Un brouillon non publié existe, mais le site a changé depuis. Le restaurer quand même ? (Annuler = repartir du site en ligne)",
+          "An unpublished draft exists, but the site has changed since. Restore it anyway? (Cancel = start from the live site)",
         )
       ) {
         draft = saved.draft;
@@ -175,7 +190,7 @@ export class EditorStore {
     }
 
     const previews = await this.restorePreviews(base, draft);
-    this.set({ status: "ready", base, draft, version, mode, previews, past: [], future: [] });
+    this.set({ status: "ready", base, draft, version, mode, emailEnv, previews, past: [], future: [] });
   }
 
   /** Re-creates object URLs for pending uploads and drops the ones nothing references anymore. */
@@ -252,7 +267,7 @@ export class EditorStore {
 
   async setImage(path: string, file: File, alsoSet?: Record<string, unknown>) {
     if (!file.type.startsWith("image/")) {
-      window.alert("Ce fichier n'est pas une image.");
+      window.alert("This file is not an image.");
       return;
     }
     try {
@@ -270,7 +285,7 @@ export class EditorStore {
       this.commit(next);
     } catch (error) {
       console.error("[admin] image processing failed", error);
-      window.alert("Impossible de lire cette image. Essayez un JPG ou un PNG.");
+      window.alert("This image could not be read. Try a JPG or PNG.");
     }
   }
 
@@ -308,12 +323,10 @@ export class EditorStore {
   /** Returns an error message, or null when the page was created. */
   addPage(title: string, requestedSlug: string): string | null {
     const { draft } = this.state;
-    if (!draft) return "Éditeur non chargé.";
+    if (!draft) return "Editor not loaded.";
     const slug = slugify(requestedSlug || title);
-    if (!slug || slug === "home" || ["admin", "api", "uploads", "gallery", "reviews"].includes(slug)) {
-      return "Cette adresse n'est pas disponible.";
-    }
-    if (draft.pages[slug]) return "Une page avec cette adresse existe déjà.";
+    if (!slug || RESERVED_SLUGS.includes(slug)) return "This address is not available.";
+    if (draft.pages[slug]) return "A page with this address already exists.";
 
     const hero = createBlock("hero");
     const page: PageContent = {
@@ -322,7 +335,7 @@ export class EditorStore {
       seoTitle: "",
       seoDescription: "",
       blocks: [
-        { ...hero, titleLine1: title.trim() || "Nouvelle page", titleLine2: "" } as PageContent["blocks"][number],
+        { ...hero, titleLine1: title.trim() || "New page", titleLine2: "" } as PageContent["blocks"][number],
         createBlock("text"),
         createBlock("cta"),
       ],
@@ -348,6 +361,7 @@ export class EditorStore {
     if (!base || !draft) return 0;
     const slugs = new Set([...Object.keys(base.pages), ...Object.keys(draft.pages)]);
     let count = JSON.stringify(base.site) === JSON.stringify(draft.site) ? 0 : 1;
+    if (JSON.stringify(base.email) !== JSON.stringify(draft.email)) count += 1;
     for (const slug of slugs) {
       if (JSON.stringify(base.pages[slug]) !== JSON.stringify(draft.pages[slug])) count += 1;
     }
@@ -366,19 +380,19 @@ export class EditorStore {
 
       const images: Record<string, string> = {};
       for (const [index, src] of pending.entries()) {
-        this.set({ publish: { state: "running", message: `Envoi des photos (${index + 1}/${pending.length})…` } });
+        this.set({ publish: { state: "running", message: `Uploading photos (${index + 1}/${pending.length})…` } });
         const blob = await fetch(previews[src]!).then((response) => response.blob());
         const result = await uploadImage(src, await toBase64(blob));
         if (!result.ok) return fail(result.error);
         images[src] = result.data;
       }
 
-      this.set({ publish: { state: "running", message: "Publication en cours…" } });
-      const result = await publishAction({ site: draft.site, pages: draft.pages, version, images });
+      this.set({ publish: { state: "running", message: "Publishing…" } });
+      const result = await publishAction({ site: draft.site, pages: draft.pages, email: draft.email, version, images });
       if (!result.ok) {
         return fail(
           result.conflict
-            ? `${result.error} Rechargez la page : vos modifications seront proposées en brouillon.`
+            ? `${result.error} Reload the page: your changes will be offered as a draft.`
             : result.error,
         );
       }
@@ -391,18 +405,28 @@ export class EditorStore {
           state: "done",
           message:
             this.state.mode === "github"
-              ? "Publié ✓ — le site sera à jour dans 1 à 2 minutes (déploiement Vercel)."
-              : "Enregistré ✓ (mode local : fichiers écrits sur le disque).",
+              ? "Published ✓ — the live site will update in 1–2 minutes (Vercel deployment)."
+              : "Saved ✓ (local mode: files written to disk).",
           url: result.data.commitUrl,
         },
       });
     } catch (error) {
       console.error("[admin] publish failed", error);
-      fail("La publication a échoué. Vérifiez votre connexion et réessayez.");
+      fail("Publishing failed. Check your connection and try again.");
     }
   };
 
   dismissPublish = () => this.set({ publish: { state: "idle", message: "" } });
+
+  /** Sends the (unpublished) confirmation template to the owner's inbox. Returns a status message. */
+  sendTestEmail = async (): Promise<{ ok: boolean; message: string }> => {
+    const { draft } = this.state;
+    if (!draft) return { ok: false, message: "Editor not loaded." };
+    const result = await sendTestEmailAction(draft.email, draft.site.business.name);
+    return result.ok
+      ? { ok: true, message: `Test email sent to ${result.data}.` }
+      : { ok: false, message: result.error };
+  };
 }
 
 function readSavedDraft(): { version: string; draft: Draft } | null {

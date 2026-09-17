@@ -40,7 +40,7 @@ export function QuickFaqAccordion({ base }: { base: string }) {
       <AddItemButton
         list={`${base}.items`}
         template={{ ...NEW_FAQ_ITEM, id: `question-${block.items.length + 1}` }}
-        label="Ajouter une question"
+        label="Add question"
         className="mt-3"
       />
     </section>

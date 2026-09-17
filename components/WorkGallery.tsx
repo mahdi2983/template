@@ -91,7 +91,7 @@ export function WorkGallery({ base }: { base: string }) {
               <span className="absolute top-2 left-2 rounded-full border border-white/10 bg-black/60 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white backdrop-blur-md">
                 <T p={`${base}.items.${index}.step`} />
               </span>
-              <ImageEditButton p={`${base}.items.${index}.src`} label="Photo" className="top-auto bottom-2 left-2 right-auto" />
+              <ImageEditButton p={`${base}.items.${index}.src`} label="Photo" className="bottom-2 left-2" />
 
               {/* Hover Fullscreen Icon */}
               <span className="absolute right-2 bottom-2 grid size-7 place-items-center rounded-full border border-white/15 bg-black/60 text-white opacity-90 shadow-md backdrop-blur-md transition-opacity duration-200 group-hover:scale-110">
@@ -117,7 +117,7 @@ export function WorkGallery({ base }: { base: string }) {
           </article>
         ))}
       </div>
-      <AddItemButton list={`${base}.items`} template={NEW_GALLERY_ITEM} label="Ajouter une photo" className="mt-3" />
+      <AddItemButton list={`${base}.items`} template={NEW_GALLERY_ITEM} label="Add photo" className="mt-3" />
 
       {/* Lightbox for Gallery */}
       <ImageLightboxModal

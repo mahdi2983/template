@@ -55,8 +55,9 @@ Côté accessibilité :
 
 | Élément | Fichier |
 | --- | --- |
-| Tous les textes, photos, prix et pages | L'éditeur visuel `/admin`, puis le bouton **Publier** |
+| Tous les textes, photos, prix et pages | L'éditeur visuel `/admin`, puis le bouton **Publish** |
 | Nom, téléphone, horaires, forfaits, textes de la réservation | `content/site.json` |
+| Emails de réservation (destinataire, textes de confirmation) | `/admin` → Settings → Emails, ou `content/email.json` |
 | Sections de chaque page (accueil = `home.json`) | `content/pages/*.json` |
 | Couleurs et animations | `app/globals.css` |
 
@@ -68,7 +69,7 @@ rayée pour « avant », une brillance céramique pour « après ». Ainsi, la p
 La section « Image placeholders » du `README.md` décrit, pour chaque emplacement, ce que la vraie photo doit
 montrer, avec les dimensions conseillées et des noms de fichiers suggérés.
 
-- **Toutes les photos :** depuis `/admin`, bouton 📷 sur la photo (ou dans **Réglages**). L'image est
+- **Toutes les photos :** depuis `/admin`, bouton 📷 sur la photo (ou dans **Settings**). L'image est
   redimensionnée dans le navigateur puis publiée dans `public/uploads/`.
 - **Miniatures d'avis :** `beforeSrc` et `afterSrc` restent facultatifs ; une miniature sans photo garde le rendu
   généré.
