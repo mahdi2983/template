@@ -11,7 +11,11 @@
       "titleLine1": "Showroom shine",
       "titleLine2": "in your driveway.",
       "text": "We bring our own water and power — nothing to hook up, nowhere to be. Hand over the keys, get back to your day, and come back to a car that looks better than the day you bought it.",
-      "chips": ["Water onboard", "Power onboard", "Fully insured"],
+      "chips": [
+        "Water onboard",
+        "Power onboard",
+        "Fully insured"
+      ],
       "ctaLabel": "See packages & pricing",
       "ctaHref": "#services",
       "poster": "/hero-poster.jpg",
@@ -34,9 +38,18 @@
       "beforeAlt": "Before: dull paint with swirl marks and water spots",
       "afterAlt": "After: deep ceramic gloss with crisp reflections",
       "stats": [
-        { "value": "70%", "label": "Swirls removed" },
-        { "value": "3 yr", "label": "Ceramic protection" },
-        { "value": "6 hrs", "label": "In your driveway" }
+        {
+          "value": "70%",
+          "label": "Swirls removed"
+        },
+        {
+          "value": "3 yr",
+          "label": "Ceramic protection"
+        },
+        {
+          "value": "6 hrs",
+          "label": "In your driveway"
+        }
       ]
     },
     {

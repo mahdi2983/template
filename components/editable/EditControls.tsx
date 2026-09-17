@@ -81,6 +81,7 @@ export function ItemControls({ list, index, length, className, children }: ItemC
   return (
     <span
       data-editor-ui
+      data-item-controls
       className={cn(
         "absolute -top-3 right-3 z-30 inline-flex items-center gap-0.5 rounded-full border border-zinc-700 bg-zinc-950/95 p-0.5 shadow-xl",
         className,

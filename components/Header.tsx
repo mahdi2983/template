@@ -29,7 +29,9 @@ export function Header() {
           </p>
           <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-zinc-800/70 px-2 py-0.5 text-[11px] font-medium text-zinc-300">
             <MapPin aria-hidden className="size-3 text-sky-400" />
-            <T p="site.business.city" />, <T p="site.business.region" />
+            <span>
+              <T p="site.business.city" />, <T p="site.business.region" />
+            </span>
           </span>
         </div>
 
