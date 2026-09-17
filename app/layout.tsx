@@ -1,42 +1,43 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AmbientBackground } from "@/components/AmbientBackground";
+import siteJson from "@/content/site.json";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
-const description =
-  "Mobile car detailing in Charlotte, NC. Ceramic coatings, paint correction, interior resets and hand wash & wax — fully self-contained with water and power onboard.";
+const { meta } = siteJson;
+const description = meta.description;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  title: `${siteConfig.name} · Mobile Car Detailing in ${siteConfig.city}, ${siteConfig.region}`,
+  title: meta.title,
   description,
   applicationName: siteConfig.name,
   openGraph: {
     type: "website",
-    title: `${siteConfig.name} — Showroom shine in your driveway`,
+    title: meta.shareTitle,
     description,
     siteName: siteConfig.name,
     locale: "en_US",
     images: [
       {
-        url: "/og-image.jpg",
+        url: meta.shareImage,
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} — Showroom shine in your driveway`,
+        alt: meta.shareTitle,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — Showroom shine in your driveway`,
+    title: meta.shareTitle,
     description,
-    images: ["/og-image.jpg"],
+    images: [meta.shareImage],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Apex Detail",
+    title: meta.appTitle,
   },
   formatDetection: { telephone: false },
 };

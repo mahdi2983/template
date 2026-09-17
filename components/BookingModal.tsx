@@ -4,12 +4,13 @@ import { Check, Clock, Loader2, MessageSquare, Phone, Send, X } from "lucide-rea
 import { useCallback, useId, useLayoutEffect, useRef, useState, type AnimationEvent, type FormEvent } from "react";
 import { submitBooking } from "@/app/actions/book";
 import { useBooking } from "@/components/BookingProvider";
+import { T } from "@/components/editable/T";
 import { cn } from "@/lib/cn";
-import { dayOptions, vehicleSizes } from "@/lib/data";
+import { useField } from "@/lib/editor/content-context";
 import { calcEstimate, formatDuration, formatPrice } from "@/lib/estimate";
-import { siteConfig } from "@/lib/site-config";
 import { focusRing, pressable } from "@/lib/styles";
-import type { PreferredDay, ServiceItem, VehicleSize } from "@/types";
+import type { DayOption, PreferredDay, ServiceItem, VehicleSize, VehicleSizeOption } from "@/types";
+import type { BusinessInfo, SiteContent } from "@/types/content";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 /** Slightly longer than the 280ms sheet-out animation. */
@@ -35,6 +36,10 @@ interface BookingSheetProps {
 
 /** Mounted fresh on every open, so its state always starts from the tapped service. */
 function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProps) {
+  const business = useField<BusinessInfo>("site.business");
+  const copy = useField<SiteContent["booking"]>("site.booking");
+  const vehicleSizes = copy.vehicleSizes as VehicleSizeOption[];
+  const dayOptions = copy.dayOptions as DayOption[];
   const [serviceId, setServiceId] = useState(initialServiceId);
   const [size, setSize] = useState<VehicleSize>("coupe");
   const [day, setDay] = useState<PreferredDay>("today");
@@ -142,14 +147,14 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
   }
 
   const messageLines = [
-    `Hi ${siteConfig.name}! I'd like to book:`,
+    `Hi ${business.name}! I'd like to book:`,
     `• ${service.name}`,
     `• Vehicle: ${vehicleModel ? `${vehicleModel} (${sizeOption.label})` : sizeOption.label}`,
     `• When: ${dayOption.label}`,
     zip ? `• ZIP: ${zip}` : null,
     `Instant estimate: ${formatPrice(estimate.low)}–${formatPrice(estimate.high)}`,
   ].filter(Boolean);
-  const smsHref = `sms:${siteConfig.phoneE164}?&body=${encodeURIComponent(messageLines.join("\n"))}`;
+  const smsHref = `sms:${business.phoneE164}?&body=${encodeURIComponent(messageLines.join("\n"))}`;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6">
@@ -178,12 +183,10 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 id={titleId} className="text-xl font-semibold tracking-tight text-zinc-100">
-                {submitted ? "Booking Confirmed" : "Book appointment"}
+                <T p={submitted ? "site.booking.successTitle" : "site.booking.title"} />
               </h2>
               <p className="mt-0.5 text-xs text-zinc-400">
-                {submitted
-                  ? "We have received your details."
-                  : "Instant confirmation with Resend. No deposit required."}
+                <T p={submitted ? "site.booking.successSubtitle" : "site.booking.subtitle"} />
               </p>
             </div>
             <button
@@ -206,31 +209,43 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               <div className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.3)]">
                 <Check className="size-7" strokeWidth={2.5} />
               </div>
-              <h3 className="text-xl font-bold text-zinc-100">Request Received!</h3>
+              <h3 className="text-xl font-bold text-zinc-100">
+                <T p="site.booking.successHeading" />
+              </h3>
               <p className="mt-2 text-xs leading-relaxed text-zinc-400 sm:text-sm">
-                A confirmation has been sent to <strong className="text-zinc-200">{customerEmail}</strong>.
-                Our detailer will text or call you shortly at <strong className="text-zinc-200">{phone}</strong> to confirm the exact arrival slot.
+                <T p="site.booking.successSentTo" /> <strong className="text-zinc-200">{customerEmail}</strong>.{" "}
+                <T p="site.booking.successCallback" /> <strong className="text-zinc-200">{phone}</strong>
               </p>
 
               <div className="mt-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-3.5 text-left text-xs">
                 <div className="flex justify-between py-1 text-zinc-400">
-                  <span>Customer:</span>
+                  <span>
+                    <T p="site.booking.summaryCustomer" />
+                  </span>
                   <span className="font-semibold text-zinc-200">{customerName}</span>
                 </div>
                 <div className="flex justify-between py-1 text-zinc-400">
-                  <span>Selected Package:</span>
+                  <span>
+                    <T p="site.booking.summaryPackage" />
+                  </span>
                   <span className="font-semibold text-zinc-200">{service.name}</span>
                 </div>
                 <div className="flex justify-between py-1 text-zinc-400">
-                  <span>Vehicle:</span>
+                  <span>
+                    <T p="site.booking.summaryVehicle" />
+                  </span>
                   <span className="font-semibold text-zinc-200">{vehicleModel || sizeOption.label}</span>
                 </div>
                 <div className="flex justify-between py-1 text-zinc-400">
-                  <span>Requested Day:</span>
+                  <span>
+                    <T p="site.booking.summaryDay" />
+                  </span>
                   <span className="font-semibold text-zinc-200">{dayOption.label}</span>
                 </div>
                 <div className="flex justify-between border-t border-zinc-800 pt-1.5 text-zinc-400">
-                  <span>Estimated Total:</span>
+                  <span>
+                    <T p="site.booking.summaryTotal" />
+                  </span>
                   <span className="font-bold text-emerald-400">
                     {formatPrice(estimate.low)} – {formatPrice(estimate.high)}
                   </span>
@@ -247,7 +262,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     focusRing,
                   )}
                 >
-                  Done
+                  <T p="site.booking.doneLabel" inButton />
                 </button>
               </div>
             </div>
@@ -256,7 +271,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               {/* Service Selection */}
               <fieldset>
                 <legend className="mb-2 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
-                  1. Choose Service
+                  <T p="site.booking.stepService" />
                 </legend>
                 <div className="space-y-1.5">
                   {services.map((item) => {
@@ -303,7 +318,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               {/* Vehicle Size & Model */}
               <fieldset>
                 <legend className="mb-2 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
-                  2. Vehicle Size
+                  <T p="site.booking.stepVehicle" />
                 </legend>
                 <div className="grid grid-cols-3 gap-2">
                   {vehicleSizes.map((option) => {
@@ -326,8 +341,12 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                           onChange={() => setSize(option.id)}
                           className="sr-only"
                         />
-                        <span className="text-xs font-semibold text-zinc-100">{option.label}</span>
-                        <span className="text-[10px] text-zinc-400">{option.hint}</span>
+                        <span className="text-xs font-semibold text-zinc-100">
+                          <T p={`site.booking.vehicleSizes.${vehicleSizes.indexOf(option)}.label`} />
+                        </span>
+                        <span className="text-[10px] text-zinc-400">
+                          <T p={`site.booking.vehicleSizes.${vehicleSizes.indexOf(option)}.hint`} />
+                        </span>
                       </label>
                     );
                   })}
@@ -338,7 +357,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     name="vehicle"
                     value={vehicleModel}
                     onChange={(e) => setVehicleModel(e.target.value)}
-                    placeholder="Vehicle year &amp; model (e.g. 2022 Ford F-150)"
+                    placeholder={copy.placeholders.vehicle}
                     required
                     className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                   />
@@ -348,7 +367,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               {/* Preferred Day */}
               <fieldset>
                 <legend className="mb-2 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
-                  3. Preferred Day
+                  <T p="site.booking.stepDay" />
                 </legend>
                 <div className="grid grid-cols-3 gap-2">
                   {dayOptions.map((option) => {
@@ -371,7 +390,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                           onChange={() => setDay(option.id)}
                           className="sr-only"
                         />
-                        {option.label}
+                        <T p={`site.booking.dayOptions.${dayOptions.indexOf(option)}.label`} />
                       </label>
                     );
                   })}
@@ -381,7 +400,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               {/* Contact Details Section */}
               <fieldset className="space-y-2">
                 <legend className="mb-1 text-xs font-medium tracking-[0.14em] text-zinc-400 uppercase">
-                  4. Your Contact Info
+                  <T p="site.booking.stepContact" />
                 </legend>
 
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -389,7 +408,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     name="name"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Full Name *"
+                    placeholder={copy.placeholders.name}
                     required
                     className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                   />
@@ -398,7 +417,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     name="email"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
-                    placeholder="Email (for confirmation) *"
+                    placeholder={copy.placeholders.email}
                     required
                     className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                   />
@@ -410,7 +429,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     name="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Phone number (for SMS) *"
+                    placeholder={copy.placeholders.phone}
                     required
                     className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                   />
@@ -419,7 +438,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     value={zip}
                     onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
                     inputMode="numeric"
-                    placeholder="ZIP code (e.g. 28202)"
+                    placeholder={copy.placeholders.zip}
                     className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                   />
                 </div>
@@ -428,7 +447,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                   name="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Special requests, driveway notes (optional)"
+                  placeholder={copy.placeholders.notes}
                   className="min-h-[44px] w-full rounded-xl border border-zinc-800 bg-zinc-950/60 px-3.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500/60 focus:outline-none"
                 />
               </fieldset>
@@ -436,7 +455,9 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
               {/* Estimate Summary Pill */}
               <div aria-live="polite" className="rounded-2xl border border-zinc-800 bg-zinc-950/60 p-3.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">Estimated Total</p>
+                  <p className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">
+                    <T p="site.booking.estimateLabel" />
+                  </p>
                   <p className="text-xl font-bold tracking-tight text-emerald-400">
                     {formatPrice(estimate.low)}
                     <span className="text-zinc-500"> – </span>
@@ -445,7 +466,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                 </div>
                 <p className="mt-1 flex items-center gap-1 text-[11px] text-zinc-400">
                   <Clock className="size-3 shrink-0 text-zinc-400" />
-                  About {estimate.durationLabel} on-site. Pay after walkaround inspection.
+                  <T p="site.booking.aboutLabel" /> {estimate.durationLabel} <T p="site.booking.estimateNote" />
                 </p>
               </div>
 
@@ -467,12 +488,12 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                 {loading ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Sending Confirmation...
+                    <T p="site.booking.sendingLabel" inButton />
                   </>
                 ) : (
                   <>
                     <Send className="size-4" />
-                    Confirm Appointment Request
+                    <T p="site.booking.submitLabel" inButton />
                   </>
                 )}
               </button>
@@ -484,7 +505,7 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     <div className="w-full border-t border-zinc-800" />
                   </div>
                   <span className="relative bg-zinc-900 px-2 text-[10px] font-semibold text-zinc-500 uppercase">
-                    or instant direct contact
+                    <T p="site.booking.altContactLabel" />
                   </span>
                 </div>
 
@@ -498,11 +519,11 @@ function BookingSheet({ initialServiceId, services, onClosed }: BookingSheetProp
                     )}
                   >
                     <MessageSquare className="size-3.5 text-zinc-400" />
-                    Text request
+                    <T p="site.booking.textRequestLabel" />
                   </a>
                   <a
-                    href={`tel:${siteConfig.phoneE164}`}
-                    aria-label={`Call ${siteConfig.phoneDisplay}`}
+                    href={`tel:${business.phoneE164}`}
+                    aria-label={`Call ${business.phoneDisplay}`}
                     className={cn(
                       "grid min-h-[44px] min-w-[44px] place-items-center rounded-xl border border-zinc-700/80 bg-zinc-800/80 text-emerald-400 hover:bg-zinc-800",
                       pressable,

@@ -1,16 +1,16 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { BookingContextValue, ServiceItem } from "@/types";
+import { useField } from "@/lib/editor/content-context";
+import { toServiceItem } from "@/lib/services";
+import type { BookingContextValue } from "@/types";
+import type { ServiceContent } from "@/types/content";
 
 const BookingContext = createContext<BookingContextValue | null>(null);
 
-interface BookingProviderProps {
-  services: ServiceItem[];
-  children: ReactNode;
-}
-
-export function BookingProvider({ services, children }: BookingProviderProps) {
+export function BookingProvider({ children }: { children: ReactNode }) {
+  const serviceContent = useField<ServiceContent[]>("site.services");
+  const services = useMemo(() => serviceContent.map(toServiceItem), [serviceContent]);
   const [state, setState] = useState<{ isOpen: boolean; selectedServiceId: string | null }>({
     isOpen: false,
     selectedServiceId: null,
