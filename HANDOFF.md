@@ -1,4 +1,4 @@
-# Handoff — Apex Mobile Detailing
+﻿# Handoff — Apex Mobile Detailing
 
 ## En bref
 
@@ -55,9 +55,9 @@ Côté accessibilité :
 
 | Élément | Fichier |
 | --- | --- |
-| Nom, téléphone, horaires, ville, rayon, note Google | `lib/site-config.ts` |
-| Forfaits et tarifs | `lib/services.ts`, ou une vraie feuille Google via la variable `SERVICES_SHEET_URL` |
-| Avis, FAQ, coefficients de gabarit | `lib/data.ts` |
+| Tous les textes, photos, prix et pages | L'éditeur visuel `/admin`, puis le bouton **Publier** |
+| Nom, téléphone, horaires, forfaits, textes de la réservation | `content/site.json` |
+| Sections de chaque page (accueil = `home.json`) | `content/pages/*.json` |
 | Couleurs et animations | `app/globals.css` |
 
 ## Images
@@ -68,11 +68,11 @@ rayée pour « avant », une brillance céramique pour « après ». Ainsi, la p
 La section « Image placeholders » du `README.md` décrit, pour chaque emplacement, ce que la vraie photo doit
 montrer, avec les dimensions conseillées et des noms de fichiers suggérés.
 
-- **Slider principal :** passer `beforeSrc` et `afterSrc` au composant, dans `app/page.tsx`.
-- **Miniatures d'avis :** déposer les fichiers dans `public/reviews/`, puis ajouter `beforeSrc` et `afterSrc` à
-  l'avis concerné dans `lib/data.ts`. Les deux champs sont facultatifs : une miniature sans photo garde le rendu
+- **Toutes les photos :** depuis `/admin`, bouton 📷 sur la photo (ou dans **Réglages**). L'image est
+  redimensionnée dans le navigateur puis publiée dans `public/uploads/`.
+- **Miniatures d'avis :** `beforeSrc` et `afterSrc` restent facultatifs ; une miniature sans photo garde le rendu
   généré.
-- **Logo :** remplacer `app/icon.svg` et le monogramme « A » dans `components/Header.tsx`.
+- **Logo :** remplacer `app/icon.svg` ; le monogramme « A » se modifie dans `/admin`.
 
 ## Vérifications effectuées
 

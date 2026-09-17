@@ -1,4 +1,4 @@
-﻿# 🚀 Apex Mobile Detailing — Client Customization & Onboarding Playbook
+# 🚀 Apex Mobile Detailing — Client Customization & Onboarding Playbook
 > **Boris Cherny (ChernyCode) Quick Adaptation Standard**  
 > Use this playbook whenever deploying this template for a new client. Total setup time: **under 10 minutes**.
 
@@ -8,57 +8,40 @@
 
 - **Framework:** Next.js 15.5 App Router, React 19, Tailwind CSS v4, TypeScript.
 - **Design System:** Apple Liquid Glass, Obsidian dark mode, frosted glass surfaces, mobile-first responsive layout.
-- **Headless CMS:** Google Sheets (CSV) with Incremental Static Regeneration (ISR 60s) — zero database maintenance.
-- **Photo CDN:** Google Forms + Google Drive edge CDN (`lh3.googleusercontent.com`) with on-the-fly WebP compression.
+- **Content:** every text, price and photo path lives in `content/site.json` and `content/pages/*.json`.
+- **Visual editor:** `/admin` (password-protected) shows the real site; the client clicks any text to edit it,
+  clicks 📷 to replace a photo from their computer, and creates new pages from the existing sections.
+- **Publishing:** the **Publier** button commits the content (and uploaded photos) to GitHub through the API;
+  Vercel redeploys automatically in 1–2 minutes. GitHub is the database — no CMS, no storage bucket.
 - **Transactional Booking:** Resend API server action (`app/actions/book.ts`) delivering instant dual-confirmation emails.
+
+```
+Client ──► /admin (iframe preview, click to edit) ──► Publier
+                                                        │  1 commit: content/*.json + public/uploads/*
+                                                        ▼
+                                                 GitHub repo ──► Vercel build ──► live site
+```
 
 ---
 
 ## ⚡ 5-Minute Client Customization Checklist
 
-### 1. Business Identity & Localization (`lib/site-config.ts`)
-Open `lib/site-config.ts` and update the client object:
-```ts
-export const siteConfig: SiteConfig = {
-  name: "Apex Mobile Detailing",            // Client Business Name
-  monogram: "A",                             // Single Letter Logo / Favicon
-  url: "https://apexdetailing.com",          // Production URL
-  city: "Charlotte",                         // Main Service City
-  region: "NC",                              // State / Region
-  phoneDisplay: "(704) 555-0142",            // Customer-facing phone
-  phoneE164: "+17045550142",                 // International click-to-call / SMS
-  hoursLabel: "Mon–Sat · 7am–7pm",           // Business hours label
-  hoursShort: "7a–7p",
-  openHour: 7,                               // For dynamic open/closed status pill
-  closeHour: 19,
-  openDays: [1, 2, 3, 4, 5, 6],
-  timeZone: "America/New_York",
-  serviceRadiusMiles: 25,                    // Travel coverage radius
-  googleRating: 5.0,                         // Google rating display
-  googleReviewCount: 127,                    // Verified reviews count
-  geo: { latitude: 35.2271, longitude: -80.8431 },
-};
-```
+### 1. Business identity, copy & photos
+Everything can be done from `/admin` once deployed:
+- **Click a text** → edit in place (Enter to validate, Esc to cancel).
+- **📷 button** on a photo → pick a file; it is resized to WebP (max 2000 px) in the browser.
+- **Réglages** (drawer) → business info (phone, hours, city, Google rating), SEO, prices/durations,
+  alt texts, and the copy of the booking sheet.
+- Hover a card → ↑ ↓ duplicate / delete. Dashed buttons add items (FAQ, reviews, gallery photos, packages…).
 
----
+To pre-fill a new client before handing over, you can also edit `content/site.json` directly.
 
-### 2. Live Pricing & Photos CMS (Google Sheets + Forms)
-1. **Google Form ("Photo Updates"):**
-   - Question 1 (Dropdown): `Select Service Package` with the package names.
-   - Question 2 (File upload): `Upload or Take New Photo` restricted to **Image**.
-   - **Google Drive Permission:** Set the generated photo response folder to **"Anyone with the link: Viewer"**.
-2. **Google Sheet:**
-   - Tab 1: `Form Responses 1` (linked from Form).
-   - Tab 2: `Services` (with headers: `id`, `name`, `tagline`, `price_from`, `duration_min`, `features`, `popular`, `accent`, `imageUrl`).
-   - Formula for `imageUrl` (cell `I2`):
-     ```excel
-     =XLOOKUP(B2, 'Form Responses 1'!B:B, 'Form Responses 1'!C:C, "/gallery/06-interior-detail.jpg", 0, -1)
-     ```
-   - Publish to web: **File > Share > Publish to web > Services tab > Comma-separated values (.csv)**.
-3. **Set Environment Variable:**
-   - Copy the published CSV URL into `NEXT_PUBLIC_SERVICES_SHEET_URL` and `SERVICES_SHEET_URL`.
+### 2. New pages
+Page menu → **+ Nouvelle page…** → title (+ optional URL). The page starts with a hero, a text block and a
+booking call-to-action; **+ Ajouter une section** inserts any existing section type (packages, before/after,
+gallery, reviews, FAQ, image, text, CTA). Pages are served at `/<slug>`.
 
----
+Sections only expose text and images: colors, fonts, sizes and layout always come from the components.
 
 ### 3. Automated Booking Emails (Resend)
 In `.env.local` (and Vercel environment variables):
@@ -70,18 +53,21 @@ ARTISAN_EMAIL="client-inbox@gmail.com"
 - During onboarding/testing: use `Apex Detailing <onboarding@resend.dev>`.
 - In production: add client domain to [Resend Domains](https://resend.com/domains) and set DNS DKIM records.
 
----
+### 4. Admin & publish button
+1. Create a **fine-grained GitHub token**: *Settings → Developer settings → Fine-grained tokens*,
+   **Only select repositories** → the client repo, **Repository permissions → Contents: Read and write**.
+2. Add to Vercel (Production):
+   ```env
+   ADMIN_PASSWORD="a long password for the client"
+   ADMIN_SECRET="64 random hex chars"   # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   GITHUB_TOKEN="github_pat_…"
+   GITHUB_REPO="mahdi2983/<client-repo>"
+   GITHUB_BRANCH="main"
+   ```
+3. Make sure the Vercel project deploys `GITHUB_BRANCH` to production (default for `main`).
 
-### 4. Localized FAQs & Reviews (`lib/data.ts`)
-- **Reviews (`reviews` array):** Update the author names, car models, neighborhoods, and testimonial quotes.
-- **FAQs (`faqs` array):** Customize travel radius, water/power requirements, rain cancellation policies, and accepted payment methods.
-
----
-
-### 5. Work Gallery & Before/After Slider (`public/`)
-Replace static images in `public/` to match the client's work:
-- `public/before.jpg` & `public/after.jpg`: The interactive slider before/after.
-- `public/gallery/01-foam-cannon.jpg` to `06-interior-detail.jpg`: The work in progress grid.
+Local development: without `GITHUB_TOKEN`, **Publier** writes the JSON files and images straight to disk
+(badge "Mode local") so the whole flow can be tested with `npm run dev`.
 
 ---
 
@@ -90,11 +76,10 @@ Replace static images in `public/` to match the client's work:
 1. Push your client repository to GitHub (`mahdi2983/<client-repo>`).
 2. Go to [Vercel Dashboard](https://vercel.com/new) and import the repository.
 3. In **Environment Variables**, add:
-   - `RESEND_API_KEY`
-   - `RESEND_FROM_EMAIL`
-   - `ARTISAN_EMAIL`
-   - `NEXT_PUBLIC_SERVICES_SHEET_URL`
-   - `SERVICES_SHEET_URL`
+   - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ARTISAN_EMAIL`
+   - `ADMIN_PASSWORD`, `ADMIN_SECRET`
+   - `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`
+   - `NEXT_PUBLIC_SITE_URL`
 4. Click **Deploy**.
 5. In **Settings > Domains**, attach the client's custom domain (e.g. `clientdetailing.com`).
    - Add DNS A Record: `@` -> `76.76.21.21`
@@ -104,11 +89,14 @@ Replace static images in `public/` to match the client's work:
 
 ## 📱 Client Delivery Handover (Zero-Support Guarantee)
 
-Save two shortcuts on the client's smartphone home screen:
-1. **Google Sheet Link** -> Add to Home Screen -> Name: **"Apex Pricing & Services"**.
-2. **Google Form Link** -> Add to Home Screen -> Name: **"Apex Photo Upload"**.
+Save **`https://<client-domain>/admin`** on the client's computer and phone home screen (name: **"Apex Admin"**)
+and give them the password.
 
 The client can now:
-- Update pricing, package descriptions, or delete services in 60 seconds.
-- Take a live photo on site and update their website in 60 seconds.
+- Change any text, price or photo, then click **Publier** — the site is live 1–2 minutes later.
+- Create new pages that automatically match the site design.
+- Undo mistakes (Ctrl+Z / ↶) before publishing; unpublished drafts survive a page reload.
 - Receive customer booking inquiries instantly in their inbox and via SMS.
+
+If two people edit at the same time, the second **Publier** is refused with a message asking to reload —
+no one silently overwrites the other.
