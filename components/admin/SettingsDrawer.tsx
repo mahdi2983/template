@@ -169,23 +169,12 @@ function EmailSettingsTab({ store, state, ctx }: { store: EditorStore; state: Ed
   return (
     <>
       <div className="mb-3 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-3 text-[11px] leading-relaxed text-zinc-400">
-        <p>
-          Booking emails are sent with Resend. Changes apply to the live site after you publish.
-        </p>
+        <p>Booking emails are sent with internal system. Changes apply to the live site after you publish.</p>
         <p className="mt-1.5">
           Sender address: <span className="font-mono text-zinc-200">{env?.senderAddress || "—"}</span>
-          {env && !env.apiKeyConfigured ? <span className="text-rose-300"> · RESEND_API_KEY missing</span> : null}
+          {env && !env.apiKeyConfigured ? <span className="text-rose-300"> · email service not configured</span> : null}
         </p>
-        <p className="mt-1">
-          The API key and the sender address stay in the Vercel environment variables (the address must belong to a
-          domain verified in Resend). Only the sender <em>name</em> can be changed here.
-        </p>
-        <p className="mt-1.5">
-          Placeholders you can use in subjects and texts:{" "}
-          <span className="font-mono text-emerald-300">
-            {"{name} {service} {estimate} {vehicle} {date} {phone} {business}"}
-          </span>
-        </p>
+        <p className="mt-1">If you need to change this address contact Mahdi Studios.</p>
       </div>
 
       {EMAIL_FIELDS.map((key) => (
@@ -193,7 +182,7 @@ function EmailSettingsTab({ store, state, ctx }: { store: EditorStore; state: Ed
       ))}
       {!email.notifyEmail && env?.fallbackRecipient ? (
         <p className="text-[11px] text-zinc-500">
-          Empty owner email: bookings go to <span className="font-mono">{env.fallbackRecipient}</span> (ARTISAN_EMAIL).
+          Empty owner email: bookings go to <span className="font-mono">{env.fallbackRecipient}</span>.
         </p>
       ) : null}
 

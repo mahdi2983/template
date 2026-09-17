@@ -35,6 +35,7 @@ export function AdminApp() {
   const state = useSyncExternalStore(store.subscribe, store.getState, store.getState);
   const [device, setDevice] = useState<DeviceId>("mobile");
   const [newPageOpen, setNewPageOpen] = useState(false);
+  const [brokenLogo, setBrokenLogo] = useState<string | null>(null);
 
   useEffect(() => {
     window.__apexEditor = store;
@@ -100,9 +101,14 @@ export function AdminApp() {
     <div className="flex h-dvh flex-col overflow-hidden">
       <header className="z-20 flex flex-wrap items-center gap-2 border-b border-zinc-800/70 bg-zinc-950/90 px-3 py-2 backdrop-blur-xl">
         <span className="relative mr-1 grid size-9 place-items-center overflow-hidden rounded-xl bg-linear-to-br from-emerald-400 to-sky-400 text-sm font-bold text-zinc-950">
-          {logo ? (
+          {logo && brokenLogo !== logo ? (
             // eslint-disable-next-line @next/next/no-img-element -- may be a local blob: preview
-            <img src={logo} alt="" className="size-full bg-zinc-950 object-contain p-0.5" />
+            <img
+              src={logo}
+              alt=""
+              onError={() => setBrokenLogo(logo)}
+              className="size-full bg-zinc-950 object-contain p-0.5"
+            />
           ) : (
             state.draft.site.business.monogram
           )}

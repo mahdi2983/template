@@ -3,6 +3,7 @@
 import { MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { OpenStatusPill } from "@/components/OpenStatusPill";
 import { ImageEditButton } from "@/components/editable/EditControls";
 import { T } from "@/components/editable/T";
@@ -12,6 +13,9 @@ import type { BusinessInfo } from "@/types/content";
 export function Header() {
   const business = useField<BusinessInfo>("site.business");
   const logo = useImageSrc("site.business.logo");
+  // The initial is the placeholder: shown when no logo is set or when the image can't be loaded.
+  const [brokenLogo, setBrokenLogo] = useState<string | null>(null);
+  const showLogo = Boolean(logo) && brokenLogo !== logo;
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-800/60 bg-[#09090b]/70 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
@@ -23,8 +27,16 @@ export function Header() {
             className="grid size-11 place-items-center rounded-2xl bg-linear-to-br from-emerald-400 to-sky-400 p-px shadow-[0_0_24px_-6px_rgba(16,185,129,0.6)] transition-all duration-300 active:scale-95"
           >
             <span className="relative grid size-full place-items-center overflow-hidden rounded-[15px] bg-zinc-950 text-lg font-semibold tracking-tight text-zinc-100">
-              {logo ? (
-                <Image src={logo} alt="" fill sizes="44px" priority className="object-contain p-1" />
+              {showLogo ? (
+                <Image
+                  src={logo}
+                  alt=""
+                  fill
+                  sizes="44px"
+                  priority
+                  onError={() => setBrokenLogo(logo)}
+                  className="object-contain p-1"
+                />
               ) : (
                 <T p="site.business.monogram" />
               )}

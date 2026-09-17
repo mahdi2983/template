@@ -153,7 +153,7 @@ export async function sendTestEmail(settings: EmailSettings, businessName: strin
   try {
     await requireAdmin();
     const email = validateEmailSettings(settings);
-    if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured on the server.");
+    if (!process.env.RESEND_API_KEY) throw new Error("The email service is not configured. Contact Mahdi Studios.");
 
     const to = ownerRecipient(email);
     const rendered = renderCustomerEmail(email, { ...SAMPLE_BOOKING, business: businessName.slice(0, 120) });
@@ -164,7 +164,10 @@ export async function sendTestEmail(settings: EmailSettings, businessName: strin
       subject: `[TEST] ${rendered.subject}`,
       html: rendered.html,
     });
-    if (result.error) throw new Error(`Resend: ${result.error.message}`);
+    if (result.error) {
+      console.error("[admin] test email failed", result.error);
+      throw new Error("The test email could not be sent. Contact Mahdi Studios if this persists.");
+    }
     return { ok: true, data: to };
   } catch (error) {
     return toError(error);
