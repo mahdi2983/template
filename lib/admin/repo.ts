@@ -34,12 +34,41 @@ export interface PublishResult {
 }
 
 export class ConflictError extends Error {}
+export class MissingUploadError extends Error {}
 
+const UPLOAD_PREFIX = "/uploads/";
 const SITE_FILE = "content/site.json";
 const EMAIL_FILE = "content/email.json";
 const PAGES_DIR = "content/pages";
 
 const defaultEmail = defaultEmailJson as EmailSettings;
+
+/** Every "/uploads/…" path the content points at. */
+function referencedUploads(input: PublishInput): string[] {
+  const found = new Set<string>();
+  const walk = (value: unknown) => {
+    if (typeof value === "string") {
+      if (value.startsWith(UPLOAD_PREFIX)) found.add(value);
+    } else if (value && typeof value === "object") {
+      Object.values(value).forEach(walk);
+    }
+  };
+  walk({ site: input.site, pages: input.pages, email: input.email });
+  return [...found];
+}
+
+/**
+ * Refuses to commit content pointing at a photo that is neither being uploaded now nor
+ * already stored — otherwise the live site would show a broken image with no warning.
+ */
+function assertUploadsResolved(input: PublishInput, existing: Set<string>): void {
+  const missing = referencedUploads(input).filter((src) => !input.images[src] && !existing.has(src));
+  if (missing.length > 0) {
+    throw new MissingUploadError(
+      `These photos were never uploaded: ${missing.join(", ")}. Select them again in the editor, then publish.`,
+    );
+  }
+}
 const toJson = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 const fingerprint = (entries: string[]) => createHash("sha256").update(entries.sort().join("\n")).digest("hex");
 
@@ -54,6 +83,11 @@ function githubConfig(): GitHubConfig | null {
   const repo = process.env.GITHUB_REPO;
   if (!token || !repo) return null;
   return { token, repo, branch: process.env.GITHUB_BRANCH || "main" };
+}
+
+/** Branch the Publish button writes to ("local" when files are written to disk). */
+export function targetBranch(): string {
+  return githubConfig()?.branch ?? "local";
 }
 
 export function storageMode(): "github" | "local" | "unconfigured" {
@@ -140,6 +174,12 @@ async function githubPublish(config: GitHubConfig, input: PublishInput): Promise
     throw new ConflictError("The content was changed elsewhere since the editor was opened.");
   }
 
+  const stored = await gh<GitHubEntry[]>(config, `/contents/public/uploads?ref=${encodeURIComponent(config.branch)}`)
+    .then((entries) => new Set(entries.map((entry) => `${UPLOAD_PREFIX}${entry.name}`)))
+    // The folder only exists once a photo has been published.
+    .catch(() => new Set<string>());
+  assertUploadsResolved(input, stored);
+
   const head = await gh<{ object: { sha: string } }>(config, `/git/ref/heads/${config.branch}`);
   const commit = await gh<{ tree: { sha: string } }>(config, `/git/commits/${head.object.sha}`);
 
@@ -217,6 +257,9 @@ async function localPublish(input: PublishInput): Promise<PublishResult> {
   if (current.version !== input.version) {
     throw new ConflictError("The content was changed elsewhere since the editor was opened.");
   }
+  const storedFiles = await readdir(path.join(root, "public", "uploads")).catch(() => [] as string[]);
+  assertUploadsResolved(input, new Set(storedFiles.map((name) => `${UPLOAD_PREFIX}${name}`)));
+
   await writeFile(path.join(root, SITE_FILE), toJson(input.site));
   await writeFile(path.join(root, EMAIL_FILE), toJson(input.email));
   const kept = new Set<string>();

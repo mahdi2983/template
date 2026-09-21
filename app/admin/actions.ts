@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { Resend } from "resend";
 import {
   ConflictError,
+  MissingUploadError,
   loadContent as loadStoredContent,
   publishContent,
   storageMode,
   storeImage,
+  targetBranch,
   type ContentSnapshot,
 } from "@/lib/admin/repo";
 import {
@@ -58,6 +60,7 @@ async function requireAdmin(): Promise<void> {
 
 function toError(error: unknown): { ok: false; error: string; conflict?: boolean } {
   if (error instanceof ConflictError) return { ok: false, error: error.message, conflict: true };
+  if (error instanceof MissingUploadError) return { ok: false, error: error.message };
   if (error instanceof ValidationError || error instanceof Error) return { ok: false, error: error.message };
   return { ok: false, error: "Unexpected error." };
 }
@@ -91,7 +94,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function loadContent(): Promise<
-  ActionResult<ContentSnapshot & { mode: string; emailEnv: EmailEnvironment }>
+  ActionResult<ContentSnapshot & { mode: string; branch: string; emailEnv: EmailEnvironment }>
 > {
   try {
     await requireAdmin();
@@ -101,7 +104,7 @@ export async function loadContent(): Promise<
       apiKeyConfigured: Boolean(process.env.RESEND_API_KEY),
       fallbackRecipient: ownerRecipient({ ...snapshot.email, notifyEmail: "" }),
     };
-    return { ok: true, data: { ...snapshot, mode: storageMode(), emailEnv } };
+    return { ok: true, data: { ...snapshot, mode: storageMode(), branch: targetBranch(), emailEnv } };
   } catch (error) {
     return toError(error);
   }

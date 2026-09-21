@@ -29,7 +29,8 @@ Client ──► /admin (iframe preview, click to edit) ──► Publish
 ### 1. Business identity, copy & photos
 Everything can be done from `/admin` once deployed:
 - **Click a text** → edit in place (Enter to validate, Esc to cancel).
-- **📷 button** on a photo → pick a file; it is resized to WebP (max 2000 px) in the browser.
+- **📷 button** on a photo → pick a file; it is resized to WebP (max 2000 px) in the browser and
+  uploaded to the repository right away (the toolbar shows "Uploading photo…").
 - **Settings** (drawer) → business info (phone, hours, city, Google rating), SEO, prices/durations,
   alt texts, and the copy of the booking sheet.
 - **Logo:** the small 📷 on the header logo uploads an image (Settings → Business → Remove to go back to the letter).
@@ -91,6 +92,25 @@ Local development: without `GITHUB_TOKEN`, **Publish** writes the JSON files and
 5. In **Settings > Domains**, attach the client's custom domain (e.g. `clientdetailing.com`).
    - Add DNS A Record: `@` -> `76.76.21.21`
    - Add DNS CNAME Record: `www` -> `cname.vercel-dns.com`
+
+---
+
+## 🩺 Troubleshooting
+
+**A change published from one device doesn't appear elsewhere.**
+Check the branch chip next to the **Publish** button: it shows where the editor commits
+(`→ main` in grey, or an amber `⚠ branch <name>` when it is anything else). An amber chip means
+`GITHUB_BRANCH` points at a non-production branch in that environment — fix it in the Vercel
+environment variables (or `.env.local` for `npm run dev`) and redeploy. The published content also
+lives on that branch only, so cherry-pick or re-apply those edits on `main`.
+
+**Unpublished changes are per device.** Edits stay in the browser that made them until **Publish**
+is clicked: another phone or computer keeps showing the live content until then.
+
+**"The photo … is missing from this device".** The photo was picked in another browser or session
+and its local copy is gone, so it cannot be uploaded. Select the photo again on the current device,
+then publish. Photos are uploaded as soon as they are picked, so this only affects drafts made
+before that upload succeeded.
 
 ---
 

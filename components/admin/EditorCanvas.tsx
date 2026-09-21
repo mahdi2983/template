@@ -130,10 +130,14 @@ function CanvasContent({ store }: { store: EditorStore }) {
         accept="image/*"
         hidden
         onChange={(event) => {
-          const file = event.target.files?.[0];
+          const input = event.target;
+          const file = input.files?.[0];
           const pick = pendingPick.current;
-          event.target.value = "";
-          if (file && pick) void store.setImage(pick.path, file, pick.alsoSet);
+          if (!file || !pick) return;
+          // iOS invalidates the picked file when the input is reset, so clear it only once read.
+          void store.setImage(pick.path, file, pick.alsoSet).finally(() => {
+            input.value = "";
+          });
         }}
       />
 
