@@ -40,17 +40,31 @@ export interface EditorState {
   slug: string;
   /** Local previews for uploaded images: public src → object URL. */
   previews: Record<string, string>;
+  /** Photos already sent to the repository: public src → git blob sha (or "local"). */
+  uploads: Record<string, string>;
+  /** Short status of a background action (photo upload), shown in the toolbar. */
+  busy: string | null;
   publish: PublishStatus;
   settingsOpen: boolean;
+  /** Branch the Publish button writes to, so a misconfigured deployment is visible. */
+  branch: string;
 }
 
-const DRAFT_KEY = "apex-admin-draft-v2";
+const DRAFT_KEY = "apex-admin-draft-v3";
 const RESERVED_SLUGS = ["home", "admin", "api", "uploads", "gallery", "reviews", "icon"];
 const HISTORY_LIMIT = 100;
 const MAX_IMAGE_EDGE = 2000;
 const MAX_IMAGE_BYTES = 2_500_000;
 
 type Listener = () => void;
+
+const UPLOAD_PREFIX = "/uploads/";
+
+/** Turns any thrown value into something worth showing to the client. */
+function describe(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/^Error:\s*/, "").slice(0, 300);
+}
 
 /** Collects every string in a value (used to find referenced uploads). */
 function collectStrings(value: unknown, into = new Set<string>()): Set<string> {
@@ -123,8 +137,11 @@ export class EditorStore {
     future: [],
     slug: "home",
     previews: {},
+    uploads: {},
+    busy: null,
     publish: { state: "idle", message: "" },
     settingsOpen: false,
+    branch: "",
   };
   private listeners = new Set<Listener>();
   private loading = false;
@@ -170,9 +187,10 @@ export class EditorStore {
       this.set({ status: "error", error: result.error });
       return;
     }
-    const { site, pages, email, version, mode, emailEnv } = result.data;
+    const { site, pages, email, version, mode, emailEnv, branch } = result.data;
     const base: Draft = { site, pages, email };
     let draft = base;
+    let uploads: Record<string, string> = {};
 
     const saved = readSavedDraft();
     if (saved) {
@@ -184,13 +202,26 @@ export class EditorStore {
         )
       ) {
         draft = saved.draft;
+        uploads = saved.uploads ?? {};
       } else {
         localStorage.removeItem(DRAFT_KEY);
       }
     }
 
     const previews = await this.restorePreviews(base, draft);
-    this.set({ status: "ready", base, draft, version, mode, emailEnv, previews, past: [], future: [] });
+    this.set({
+      status: "ready",
+      base,
+      draft,
+      version,
+      mode,
+      emailEnv,
+      branch,
+      previews,
+      uploads,
+      past: [],
+      future: [],
+    });
   }
 
   /** Re-creates object URLs for pending uploads and drops the ones nothing references anymore. */
@@ -221,7 +252,12 @@ export class EditorStore {
     const { draft, past } = this.state;
     if (!draft || next === draft) return;
     this.set({ draft: next, past: [...past, draft].slice(-HISTORY_LIMIT), future: [] });
-    saveDraft(this.state.version, next);
+    this.save();
+  }
+
+  private save() {
+    const { version, draft, uploads } = this.state;
+    if (draft) saveDraft(version, draft, uploads);
   }
 
   /** Canvas paths use `page.` for the current page; the store works on `pages.<slug>.`. */
@@ -270,22 +306,66 @@ export class EditorStore {
       window.alert("This file is not an image.");
       return;
     }
-    try {
-      const { blob, extension } = await prepareImage(file);
-      const name = slugify(file.name.replace(/\.[^.]+$/, "")) || "photo";
-      const src = `/uploads/${Date.now().toString(36)}-${name}.${extension}`;
-      await imageDb.put(src, blob).catch(() => undefined);
-      this.set({ previews: { ...this.state.previews, [src]: URL.createObjectURL(blob) } });
 
-      // One history entry for the image and its side effects.
-      let next = setAt(this.state.draft!, this.resolvePath(path), src);
-      for (const [extraPath, value] of Object.entries(alsoSet ?? {})) {
-        next = setAt(next, this.resolvePath(extraPath), value);
-      }
-      this.commit(next);
+    let blob: Blob;
+    let src: string;
+    try {
+      const prepared = await prepareImage(file);
+      blob = prepared.blob;
+      const name = slugify(file.name.replace(/\.[^.]+$/, "")) || "photo";
+      src = `${UPLOAD_PREFIX}${Date.now().toString(36)}-${name}.${prepared.extension}`;
     } catch (error) {
       console.error("[admin] image processing failed", error);
       window.alert("This image could not be read. Try a JPG or PNG.");
+      return;
+    }
+
+    await imageDb.put(src, blob).catch(() => undefined);
+    this.set({ previews: { ...this.state.previews, [src]: URL.createObjectURL(blob) } });
+
+    // One history entry for the image and its side effects.
+    let next = setAt(this.state.draft!, this.resolvePath(path), src);
+    for (const [extraPath, value] of Object.entries(alsoSet ?? {})) {
+      next = setAt(next, this.resolvePath(extraPath), value);
+    }
+    this.commit(next);
+
+    // Send it to the repository straight away: the photo then no longer depends on
+    // this browser (previews can be lost across devices, reloads or private mode).
+    this.set({ busy: "Uploading photo…" });
+    const result = await this.uploadOne(src, blob);
+    this.set({ busy: null });
+    if (!result.ok) {
+      this.set({
+        publish: { state: "error", message: `The photo could not be uploaded: ${result.error} It will be retried when you publish.` },
+      });
+    }
+  }
+
+  /** Uploads one prepared photo and remembers its git sha. */
+  private async uploadOne(src: string, blob: Blob): Promise<{ ok: true } | { ok: false; error: string }> {
+    try {
+      const result = await uploadImage(src, await toBase64(blob));
+      if (!result.ok) return { ok: false, error: result.error };
+      this.set({ uploads: { ...this.state.uploads, [src]: result.data } });
+      this.save();
+      return { ok: true };
+    } catch (error) {
+      console.error("[admin] image upload failed", src, error);
+      return { ok: false, error: describe(error) };
+    }
+  }
+
+  /** Best-effort lookup of a photo's bytes: IndexedDB first, then the in-memory preview. */
+  private async findBlob(src: string): Promise<Blob | null> {
+    const stored = await imageDb.get(src).catch(() => null);
+    if (stored) return stored;
+    const preview = this.state.previews[src];
+    if (!preview) return null;
+    try {
+      return await fetch(preview).then((response) => response.blob());
+    } catch {
+      return null;
     }
   }
 
@@ -296,7 +376,7 @@ export class EditorStore {
     const previous = past.at(-1);
     if (!previous || !draft) return;
     this.set({ draft: previous, past: past.slice(0, -1), future: [draft, ...future] });
-    saveDraft(this.state.version, previous);
+    this.save();
   };
 
   redo = () => {
@@ -304,7 +384,7 @@ export class EditorStore {
     const [next, ...rest] = future;
     if (!next || !draft) return;
     this.set({ draft: next, past: [...past, draft], future: rest });
-    saveDraft(this.state.version, next);
+    this.save();
   };
 
   discardAll = () => {
@@ -369,22 +449,35 @@ export class EditorStore {
   }
 
   publish = async () => {
-    const { draft, base, version, previews } = this.state;
+    const { draft, base, version } = this.state;
     if (!draft || !base || this.state.publish.state === "running") return;
 
     const fail = (message: string) => this.set({ publish: { state: "error", message } });
     try {
-      const referenced = collectStrings(draft);
       const published = collectStrings(base);
-      const pending = Object.keys(previews).filter((src) => referenced.has(src) && !published.has(src));
+      // Every photo the draft points at that the live site doesn't have yet.
+      const needed = [...collectStrings(draft)].filter(
+        (value) => value.startsWith(UPLOAD_PREFIX) && !published.has(value),
+      );
 
       const images: Record<string, string> = {};
-      for (const [index, src] of pending.entries()) {
-        this.set({ publish: { state: "running", message: `Uploading photos (${index + 1}/${pending.length})…` } });
-        const blob = await fetch(previews[src]!).then((response) => response.blob());
-        const result = await uploadImage(src, await toBase64(blob));
-        if (!result.ok) return fail(result.error);
-        images[src] = result.data;
+      for (const [index, src] of needed.entries()) {
+        const known = this.state.uploads[src];
+        if (known) {
+          images[src] = known;
+          continue;
+        }
+        // Not uploaded yet (or the upload failed earlier): retry from the local copy.
+        this.set({ publish: { state: "running", message: `Uploading photos (${index + 1}/${needed.length})…` } });
+        const blob = await this.findBlob(src);
+        if (!blob) {
+          return fail(
+            `The photo "${src.slice(UPLOAD_PREFIX.length)}" is missing from this device — it was added from another browser or session. Select that photo again, then publish.`,
+          );
+        }
+        const result = await this.uploadOne(src, blob);
+        if (!result.ok) return fail(`The photo could not be uploaded: ${result.error}`);
+        images[src] = this.state.uploads[src]!;
       }
 
       this.set({ publish: { state: "running", message: "Publishing…" } });
@@ -400,19 +493,20 @@ export class EditorStore {
       localStorage.removeItem(DRAFT_KEY);
       this.set({
         base: draft,
+        uploads: {},
         version: result.data.version,
         publish: {
           state: "done",
           message:
             this.state.mode === "github"
-              ? "Published ✓ — the live site will update in 1–2 minutes (Vercel deployment)."
+              ? `Published to “${this.state.branch}” ✓ — the live site updates in 1–2 minutes.`
               : "Saved ✓ (local mode: files written to disk).",
           url: result.data.commitUrl,
         },
       });
     } catch (error) {
       console.error("[admin] publish failed", error);
-      fail("Publishing failed. Check your connection and try again.");
+      fail(`Publishing failed: ${describe(error)} — nothing was changed on the live site. Try again.`);
     }
   };
 
@@ -429,18 +523,25 @@ export class EditorStore {
   };
 }
 
-function readSavedDraft(): { version: string; draft: Draft } | null {
+interface SavedDraft {
+  version: string;
+  draft: Draft;
+  /** Photos already sent to the repository, so a reload never loses them. */
+  uploads?: Record<string, string>;
+}
+
+function readSavedDraft(): SavedDraft | null {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
-    return raw ? (JSON.parse(raw) as { version: string; draft: Draft }) : null;
+    return raw ? (JSON.parse(raw) as SavedDraft) : null;
   } catch {
     return null;
   }
 }
 
-function saveDraft(version: string, draft: Draft) {
+function saveDraft(version: string, draft: Draft, uploads: Record<string, string>) {
   try {
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({ version, draft }));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ version, draft, uploads }));
   } catch (error) {
     console.warn("[admin] draft not saved locally", error);
   }

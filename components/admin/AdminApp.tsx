@@ -176,11 +176,29 @@ export function AdminApp() {
         </button>
 
         <div className="ml-auto flex items-center gap-2">
-          {state.mode === "local" ? (
-            <span className="hidden rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 sm:inline">
-              Local mode
+          {state.busy ? (
+            <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400">
+              <Loader2 aria-hidden className="size-3.5 animate-spin" />
+              {state.busy}
             </span>
           ) : null}
+          {state.mode === "local" ? (
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+              Local
+            </span>
+          ) : (
+            <span
+              title={`The Publish button writes to the “${state.branch}” branch of the repository.`}
+              className={cn(
+                "max-w-[8rem] truncate rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                state.branch === "main"
+                  ? "bg-zinc-800 text-zinc-400"
+                  : "bg-amber-500/15 text-amber-300",
+              )}
+            >
+              {state.branch === "main" ? "→ main" : `⚠ branch ${state.branch}`}
+            </span>
+          )}
           <button type="button" onClick={() => store.setSettingsOpen(true)} className={toolbarButton}>
             <Settings2 aria-hidden className="size-4" />
             <span className="hidden sm:inline">Settings</span>
@@ -188,7 +206,7 @@ export function AdminApp() {
           <button
             type="button"
             onClick={() => void store.publish()}
-            disabled={publishing || changes === 0}
+            disabled={publishing || changes === 0 || Boolean(state.busy)}
             className={cn(
               "inline-flex min-h-[36px] items-center gap-1.5 rounded-xl bg-emerald-500 px-3 text-sm font-bold text-zinc-950 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-500",
               pressable,

@@ -23,6 +23,7 @@ async function run<T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) 
 
 export const imageDb = {
   put: (key: string, blob: Blob) => run("readwrite", (store) => store.put(blob, key)),
+  get: (key: string) => run<Blob | undefined>("readonly", (store) => store.get(key)),
   delete: (key: string) => run("readwrite", (store) => store.delete(key)),
   async entries(): Promise<[string, Blob][]> {
     const [keys, values] = await Promise.all([
